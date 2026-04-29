@@ -1,2 +1,2 @@
 # GU-007.github.io
-My personal security blog
+A public notebook for my cybersecurity learning journey.
