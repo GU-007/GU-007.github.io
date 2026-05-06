@@ -4,14 +4,26 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>{{ page.title | default: site.title }}</title>
-  <!-- 加载 minima 主题的默认样式（保持原有结构） -->
   <link rel="stylesheet" href="{{ '/assets/main.css' | relative_url }}">
-  <!-- 加载自定义样式（强制覆盖） -->
   <link rel="stylesheet" href="{{ '/assets/css/custom.css' | relative_url }}">
 </head>
 <body>
   <div class="wrapper">
+    <!-- 头部 -->
+    <div class="site-header">
+      <h1>{{ site.title }}</h1>
+      {% if site.description %}
+        <p class="site-desc">{{ site.description }}</p>
+      {% endif %}
+    </div>
+
+    <!-- 文章列表内容 -->
     {{ content }}
+
+    <!-- 页脚 -->
+    <footer>
+      <hr>
+    </footer>
   </div>
 </body>
 </html>
