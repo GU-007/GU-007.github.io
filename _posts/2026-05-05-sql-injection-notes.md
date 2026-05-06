@@ -111,7 +111,7 @@ categories: ["学习笔记"]
 
 #### 1. 信息获取函数
 | 函数 | 返回值 | 示例 |
-|------|--------|------|
+| --- | --- | --- |
 | `database()` | 当前数据库名 | `SELECT database();` |
 | `version()` | MySQL 版本 | `SELECT version();` |
 | `user()` | 连接数据库的用户 | `SELECT user();` |
@@ -119,7 +119,7 @@ categories: ["学习笔记"]
 
 #### 2. 字符串处理（常用于注入）
 | 函数 | 作用 | 示例 |
-|------|------|------|
+| --- | --- | --- |
 | `group_concat(col)` | 将多行某列拼接为单行字符串，默认逗号分隔 | `SELECT group_concat(username) FROM users;` |
 | `concat(a,b,c)` | 连接多个字符串 | `SELECT concat('a','b','c');` → `abc` |
 | `concat_ws(sep,a,b)` | 带分隔符的连接 | `SELECT concat_ws(',','a','b');` → `a,b` |
@@ -155,7 +155,7 @@ SELECT column_name FROM information_schema.columns WHERE table_schema='库名' A
 依次提交以下 payload，观察页面变化（从正常显示 → 报错 → 恢复正常）：
 
 | Payload | 预期恢复正常的情况 | 推断的闭合方式 |
-|---------|-------------------|----------------|
+| --- | --- | --- |
 | `1' --+` | 恢复正常 | 单引号 `'` |
 | `1" --+` | 恢复正常 | 双引号 `"` |
 | `1') --+` | 恢复正常 | 单引号 + 右括号 `')` |
@@ -175,7 +175,7 @@ SELECT column_name FROM information_schema.columns WHERE table_schema='库名' A
 
 #### 4.常见闭合方式速查表
 | 后端 SQL 示例（伪代码） | 闭合方式 | 测试 Payload |
-|------------------------|----------|--------------|
+| --- | --- | --- |
 | `WHERE id = $id` | 无（数字型） | `1 and 1=1` |
 | `WHERE id = '$id'` | `'` | `1' and 1=1 --+` |
 | `WHERE id = "$id"` | `"` | `1" and 1=1 --+` |
@@ -246,10 +246,10 @@ SELECT column_name FROM information_schema.columns WHERE table_schema='库名' A
 **思路**：
 
 >1.判断注入点（引号、注释、真假条件）。
->2.判断列数（order by）。
->3.尝试 union 看是否有回显（显示位）。
->4.如有回显 → 用联合查询直接拿数据。
->如无回显 → 考虑布尔盲注或时间盲注。
+2.判断列数（order by）。
+3.尝试 union 看是否有回显（显示位）。
+4.如有回显 → 用联合查询直接拿数据。
+  如无回显 → 考虑布尔盲注或时间盲注。
 
 ```sql
 -- 假设注入点闭合字符为单引号，注释符为 --
