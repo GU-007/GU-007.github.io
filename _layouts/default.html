@@ -1,0 +1,17 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>{{ page.title | default: site.title }}</title>
+  <!-- 加载 minima 主题的默认样式（保持原有结构） -->
+  <link rel="stylesheet" href="{{ '/assets/main.css' | relative_url }}">
+  <!-- 加载自定义样式（强制覆盖） -->
+  <link rel="stylesheet" href="{{ '/assets/css/custom.css' | relative_url }}">
+</head>
+<body>
+  <div class="wrapper">
+    {{ content }}
+  </div>
+</body>
+</html>
