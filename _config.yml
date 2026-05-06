@@ -1,0 +1,14 @@
+# 站点基础信息
+title: GU-007 的安全学习笔记
+description: 记录网络安全学习过程
+author: GU-007
+
+# 启用主题
+theme: minima
+
+
+# 插件（生成文章列表）
+plugins:
+  - jekyll-feed
+  - jekyll-seo-tag
+
