@@ -147,3 +147,44 @@ footer::before {
   display: block;
   font-size: 0.8rem;
 }
+
+/* ========== 表格样式 ========== */
+table {
+  width: 100%;
+  border-collapse: collapse;
+  margin: 1.5rem 0;
+  font-size: 0.9rem;
+  overflow-x: auto;
+  display: block;
+  font-family: inherit;
+}
+
+th, td {
+  border: 1px solid #e2c8b5;        /* 暖灰边框，呼应枫叶色 */
+  padding: 0.6rem 0.8rem;
+  text-align: left;
+  vertical-align: top;
+  background-color: rgba(255, 252, 245, 0.88); /* 和卡片底色一致且半透 */
+}
+
+th {
+  background-color: rgba(200, 170, 140, 0.25); /* 表头淡暖棕 */
+  font-weight: 600;
+  color: #c25d1e;                    /* 枫叶橙 */
+  border-bottom-width: 2px;
+}
+
+td code {
+  background: none;                  /* 表格内代码不需要背景色 */
+  padding: 0;
+  font-size: 0.9em;
+}
+
+/* 让表格在小屏幕上可横向滚动（不破坏布局） */
+@media (max-width: 700px) {
+  table {
+    display: block;
+    overflow-x: auto;
+    white-space: nowrap;
+  }
+}
