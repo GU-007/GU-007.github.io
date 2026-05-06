@@ -1,5 +1,4 @@
-/* ========== 彻底重置，无卡片、无白框 ========== */
-
+/* ========== 基本重置 ========== */
 * {
   margin: 0;
   padding: 0;
@@ -19,9 +18,9 @@ body {
   margin: 0;
   padding: 2rem 1.5rem;
   position: relative;
-  text-shadow: 0 1px 2px rgba(255, 250, 240, 0.7); /* 保证文字清晰 */
 }
 
+/* 半透明覆盖层：让背景图片更淡雅（不透明度降低，让枫叶更明显） */
 body::before {
   content: "";
   position: fixed;
@@ -29,19 +28,26 @@ body::before {
   left: 0;
   width: 100%;
   height: 100%;
-  background-color: rgba(250, 240, 230, 0.4); /* 透明度降低，枫叶更明显 */
+  background-color: rgba(250, 240, 230, 0.3); /* 更淡，枫叶纹理更清晰 */
   pointer-events: none;
   z-index: -1;
 }
 
+/* ========== 卡片容器（半透明白框，柔和） ========== */
 .container {
   max-width: 880px;
   margin: 0 auto;
-  padding: 0;
+  padding: 2.2rem 2.5rem;
+  background-color: rgba(255, 252, 245, 0.88);  /* 白且半透，88% 不透明度，让背景透出 */
+  backdrop-filter: blur(2px);                  /* 轻微模糊，增加融合感，不喜欢可删 */
+  border-radius: 28px;
+  box-shadow: 0 8px 20px rgba(0, 0, 0, 0.05);  /* 极浅阴影，不突兀 */
+  border: 1px solid rgba(200, 170, 140, 0.2);  /* 暖色细边框，代替生硬边界 */
 }
 
+/* 头部样式 */
 .site-header {
-  margin-bottom: 2.5rem;
+  margin-bottom: 2rem;
   text-align: left;
   border-bottom: 1px solid rgba(180, 120, 80, 0.3);
   padding-bottom: 0.5rem;
@@ -63,6 +69,7 @@ body::before {
   margin-top: 0.2rem;
 }
 
+/* 文章列表 */
 .post-list {
   list-style: none;
   padding-left: 0;
@@ -78,7 +85,6 @@ body::before {
   color: #9b4b1a;
   text-decoration: none;
   transition: color 0.2s;
-  text-shadow: none; /* 链接不需要阴影 */
 }
 .post-list li a:hover {
   color: #c25d1e;
@@ -91,6 +97,7 @@ body::before {
   margin-left: 0.8rem;
 }
 
+/* 文章正文页面（内页） */
 article {
   background: transparent;
 }
@@ -108,7 +115,6 @@ article p {
 }
 article a {
   color: #c25d1e;
-  text-shadow: none;
 }
 article a:hover {
   color: #8b3e0e;
@@ -126,8 +132,9 @@ pre {
   overflow-x: auto;
 }
 
+/* 页脚 */
 footer {
-  margin-top: 3rem;
+  margin-top: 2.5rem;
   text-align: center;
   font-size: 0.7rem;
   color: #c9aa8a;
