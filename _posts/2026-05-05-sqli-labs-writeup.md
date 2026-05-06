@@ -1,6 +1,6 @@
 ---
 title: "sqli-labs writeup"
-date: 2025-05-05
+date: 2026-05-05
 tags: ["SQL注入", "sqli-labs", "Writeup"]
 categories: ["靶场通关"]
 ---
