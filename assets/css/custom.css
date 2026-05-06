@@ -1,6 +1,5 @@
 /* ========== 全局设置 ========== */
 body {
-  /* 背景：枫叶图片，浅色叠加层使图片变淡 */
   background-image: url('/assets/images/maple-bg.jpg');
   background-size: cover;
   background-position: center;
@@ -9,13 +8,13 @@ body {
 
   font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
   line-height: 1.6;
-  color: #2c3e2f;
+  color: #3c2e2a;   /* 暖深棕，不刺眼 */
   margin: 0;
   padding: 0;
   position: relative;
 }
 
-/* 给背景加一个纯色半透层（调浅图片）—— 透明度降低，让枫叶更可见 */
+/* 半透层更薄，让背景透出更多枫叶质感 */
 body::before {
   content: "";
   position: fixed;
@@ -23,120 +22,125 @@ body::before {
   left: 0;
   width: 100%;
   height: 100%;
-  background-color: rgba(250, 245, 235, 0.55);  /* 暖白半透明，55% 不透明度，让枫叶纹理透出 */
+  background-color: rgba(255, 245, 235, 0.4);  /* 极浅暖白，保留纹理 */
   pointer-events: none;
   z-index: -1;
 }
 
-/* 页面主体内容卡片 */
+/* 卡片：背景半透奶油色，边缘柔和，与背景融合 */
 .wrapper {
-  max-width: 860px;
-  margin: 2rem auto;
-  background-color: rgba(255, 255, 250, 0.92);
-  backdrop-filter: blur(0.5px);
+  max-width: 880px;
+  margin: 3rem auto;
+  background-color: rgba(255, 252, 245, 0.92);
+  backdrop-filter: blur(2px);      /* 轻微模糊，让背景透过来但不干扰阅读 */
   padding: 2rem 2rem 2.5rem 2rem;
-  border-radius: 20px;
-  box-shadow: 0 8px 20px rgba(0, 0, 0, 0.05);
+  border-radius: 24px;
+  box-shadow: 0 10px 25px rgba(0, 0, 0, 0.05);
+  border: 1px solid rgba(200, 170, 140, 0.2);
 }
 
-/* ========== 头部样式 ========== */
+/* 头部：枫叶点缀 */
 .site-header {
   margin-bottom: 2rem;
-  padding-bottom: 0.5rem;
-  border-bottom: 1px solid #e2e6e0;
+  padding-bottom: 0.75rem;
+  border-bottom: 1px solid #e3d6cc;
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  flex-wrap: wrap;
 }
 .site-header h1 {
   font-size: 1.8rem;
   font-weight: 500;
-  color: #4a6a45;
-  margin: 0 0 0.2rem 0;
+  color: #b85c1a;   /* 枫叶橙红 */
+  margin: 0;
+  letter-spacing: -0.2px;
+}
+.site-header h1::before {
+  content: "🍁 ";
+  font-size: 1.6rem;
+  opacity: 0.7;
 }
 .site-desc {
-  color: #8aa087;
-  font-size: 0.9rem;
+  color: #9b7b64;
+  font-size: 0.85rem;
   margin: 0;
+  font-style: italic;
 }
 
-/* ========== 页脚只留一条细线 ========== */
+/* 页脚细线 + 枫叶小点 */
 footer hr {
   margin-top: 2.5rem;
   border: none;
-  border-top: 1px solid #e2e6e0;
+  border-top: 1px solid #e3d6cc;
+}
+footer::after {
+  content: "🍁";
+  display: block;
+  text-align: center;
+  font-size: 0.7rem;
+  color: #d9b48b;
+  margin-top: 0.5rem;
+  opacity: 0.5;
 }
 
-/* ========== 文章列表样式 ========== */
+/* 文章列表 */
 .post-list {
   list-style: none;
   padding-left: 0;
 }
 .post-list li {
   margin-bottom: 1rem;
-  border-bottom: 1px solid #e2e6e0;
+  border-bottom: 1px solid #f0e4d8;
   padding-bottom: 0.6rem;
 }
 .post-list li a {
   font-size: 1.2rem;
   font-weight: 500;
-  color: #3a5e3f;
+  color: #8c5a3c;
   text-decoration: none;
   transition: color 0.2s;
 }
 .post-list li a:hover {
-  color: #d48c3d;   /* 枫叶橙色点缀 */
+  color: #c96f2d;
   text-decoration: underline;
 }
 .post-meta {
   display: block;
-  font-size: 0.85rem;
-  color: #7f8c7a;
+  font-size: 0.8rem;
+  color: #b6a088;
   margin-top: 0.2rem;
 }
 
-/* ========== 页面标题 (Posts) ========== */
+/* 页面标题 (Posts) */
 .site-title, h1 {
   font-size: 2rem;
   font-weight: 500;
-  color: #4a6a45;
+  color: #b05e1a;
   margin-bottom: 1.5rem;
-  letter-spacing: -0.3px;
-  border-left: 4px solid #d48c3d;   /* 枫叶橙色边框 */
+  border-left: 4px solid #c96f2d;
   padding-left: 1rem;
 }
 
-/* ========== 文章正文样式 ========== */
-article {
-  background: transparent;
-}
+/* 文章正文 */
 article h2 {
-  color: #4a6a45;
-  border-bottom: 1px solid #d9e0d4;
-  padding-bottom: 0.3rem;
+  color: #b85c1a;
+  border-bottom: 1px solid #eedbcb;
 }
 article a {
-  color: #c49a6c;
+  color: #c4682c;
 }
 article a:hover {
-  color: #9b6a3c;
+  color: #9c4f1c;
 }
 code {
-  background-color: #f4f0ea;
+  background-color: #f5ede4;
   padding: 0.2rem 0.4rem;
   border-radius: 6px;
-  font-size: 0.9em;
+  color: #8c5a3c;
 }
 pre {
-  background-color: #f4f0ea;
+  background-color: #f5ede4;
   padding: 1rem;
   border-radius: 12px;
-  overflow-x: auto;
-}
-
-/* ========== 底部 footer ========== */
-footer {
-  margin-top: 2rem;
-  text-align: center;
-  font-size: 0.8rem;
-  color: #9aa896;
-  border-top: 1px solid #e0e4db;
-  padding-top: 1rem;
 }
