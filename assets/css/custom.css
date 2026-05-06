@@ -1,1 +1,118 @@
+/* ========== 全局设置 ========== */
+body {
+  /* 背景：枫叶图片，浅色叠加层使图片变淡 */
+  background-image: url('/assets/images/maple-bg.jpg');
+  background-size: cover;          /* 铺满屏幕 */
+  background-position: center;
+  background-attachment: fixed;    /* 固定背景，滚动时不动 */
+  background-repeat: no-repeat;
 
+  /* 叠加一层半透明白色，让图片变得很浅，接近于纹理效果 */
+  position: relative;
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+  line-height: 1.6;
+  color: #2c3e2f;   /* 深灰绿色，呼应枫叶/自然，但不抢眼 */
+  margin: 0;
+  padding: 0;
+}
+
+/* 给背景加一个纯色半透层（调浅图片的真正实现） */
+body::before {
+  content: "";
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background-color: rgba(255, 248, 240, 0.75);  /* 暖白半透明，75% 不透明度 */
+  pointer-events: none;   /* 让这个层不干扰点击 */
+  z-index: -1;            /* 放在内容下方 */
+}
+
+/* 页面主体内容卡片（白色半透，干净） */
+.wrapper {
+  max-width: 860px;
+  margin: 2rem auto;
+  background-color: rgba(255, 255, 250, 0.92);  /* 极浅米白半透 */
+  backdrop-filter: blur(0.5px);                 /* 轻微模糊，增加质感（可选，不影响阅读） */
+  padding: 2rem 2rem 2.5rem 2rem;
+  border-radius: 20px;
+  box-shadow: 0 8px 20px rgba(0, 0, 0, 0.05);
+}
+
+/* ========== 文章列表样式 ========== */
+.post-list {
+  list-style: none;
+  padding-left: 0;
+}
+.post-list li {
+  margin-bottom: 1rem;
+  border-bottom: 1px solid #e2e6e0;
+  padding-bottom: 0.6rem;
+}
+.post-list li a {
+  font-size: 1.2rem;
+  font-weight: 500;
+  color: #3a5e3f;
+  text-decoration: none;
+  transition: color 0.2s;
+}
+.post-list li a:hover {
+  color: #d48c3d;    /* 枫叶橙色，小面积点缀，不突兀 */
+  text-decoration: underline;
+}
+.post-meta {
+  display: block;
+  font-size: 0.85rem;
+  color: #7f8c7a;
+  margin-top: 0.2rem;
+}
+
+/* ========== 页面标题 (Posts) ========== */
+.site-title, h1 {
+  font-size: 2rem;
+  font-weight: 500;
+  color: #4a6a45;
+  margin-bottom: 1.5rem;
+  letter-spacing: -0.3px;
+  border-left: 4px solid #c49a6c;
+  padding-left: 1rem;
+}
+
+/* ========== 文章正文 ========== */
+article {
+  background: transparent;
+}
+article h2 {
+  color: #4a6a45;
+  border-bottom: 1px solid #d9e0d4;
+  padding-bottom: 0.3rem;
+}
+article a {
+  color: #c49a6c;
+}
+article a:hover {
+  color: #9b6a3c;
+}
+code {
+  background-color: #f4f0ea;
+  padding: 0.2rem 0.4rem;
+  border-radius: 6px;
+  font-size: 0.9em;
+}
+pre {
+  background-color: #f4f0ea;
+  padding: 1rem;
+  border-radius: 12px;
+  overflow-x: auto;
+}
+
+/* ========== 底部 footer ========== */
+footer {
+  margin-top: 2rem;
+  text-align: center;
+  font-size: 0.8rem;
+  color: #9aa896;
+  border-top: 1px solid #e0e4db;
+  padding-top: 1rem;
+}
