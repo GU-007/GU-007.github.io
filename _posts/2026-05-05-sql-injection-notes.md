@@ -99,17 +99,18 @@ categories: ["学习笔记"]
 - SQL注入的本质：
   服务器把用户的输入作为SQL语句的一部分来执行，违背了“数据和代码分离原则”
   **万能密码**`1' or '1' = '1`
-  ```
+```
   原始查询：SELECT * FROM users WHERE username='admin' AND password='$password'
 输入密码：1' or '1'='1
   拼接后：SELECT * FROM users WHERE username='admin' AND password='1' or '1'='1'
   -- '1'='1'是恒真的，所以整个判断语句'1' or '1'='1'也一定为真
-  ```
+```
 
 
 ### SQL注入常用函数与系统表
 
 #### 1. 信息获取函数
+
 | 函数 | 返回值 | 示例 |
 | --- | --- | --- |
 | `database()` | 当前数据库名 | `SELECT database();` |
@@ -118,6 +119,7 @@ categories: ["学习笔记"]
 | `@@datadir` | 数据目录路径 | `SELECT @@datadir;` |
 
 #### 2. 字符串处理（常用于注入）
+
 | 函数 | 作用 | 示例 |
 | --- | --- | --- |
 | `group_concat(col)` | 将多行某列拼接为单行字符串，默认逗号分隔 | `SELECT group_concat(username) FROM users;` |
@@ -174,6 +176,7 @@ SELECT column_name FROM information_schema.columns WHERE table_schema='库名' A
 若满足上述差异，则闭合方式正确。
 
 #### 4.常见闭合方式速查表
+
 | 后端 SQL 示例（伪代码） | 闭合方式 | 测试 Payload |
 | --- | --- | --- |
 | `WHERE id = $id` | 无（数字型） | `1 and 1=1` |
