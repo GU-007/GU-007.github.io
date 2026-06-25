@@ -1,14 +1,149 @@
-# 站点基础信息
-title: "G7's Security Notes"
-description: "Learning logs for cybersecurity"
+# Hexo Configuration
+## Docs: https://hexo.io/docs/configuration.html
+## Source: https://github.com/hexojs/hexo/
+
+# Site
+title: "G7's Security Notes 🍁"
+subtitle: '网络安全学习日志 | Cybersecurity Learning Log'
+description: '记录Web安全、渗透测试、逆向分析等网络安全领域的学习笔记与技术分享'
+keywords:
+  - 网络安全
+  - Web安全
+  - SQL注入
+  - CTF
+  - 渗透测试
+  - Cybersecurity
 author: G7
+language: zh-CN
+timezone: 'Asia/Shanghai'
 
-# 启用主题
-theme: minima
+# URL
+## If your site is put in a subdirectory, set url as 'http://example.com/child' and root as '/child/'
+url: https://GU-007.github.io
+root: /
+permalink: :year/:month/:day/:title/
+permalink_defaults:
+pretty_urls:
+  trailing_index: true
+  trailing_html: true
 
+# Directory
+source_dir: source
+public_dir: public
+tag_dir: tags
+archive_dir: archives
+category_dir: categories
+code_dir: downloads/code
+i18n_dir: :lang
+skip_render:
 
-# 插件（生成文章列表）
-plugins:
-  - jekyll-feed
-  - jekyll-seo-tag
+# Writing
+new_post_name: :title.md
+default_layout: post
+titlecase: false
+external_link:
+  enable: true
+  field: site
+  exclude: ''
+filename_case: 0
+render_drafts: false
+post_asset_folder: false
+relative_link: false
+future: true
+syntax_highlighter: highlight.js
+highlight:
+  line_number: true
+  auto_detect: false
+  tab_replace: ''
+  wrap: true
+  hljs: false
+prismjs:
+  preprocess: true
+  line_number: true
+  tab_replace: ''
 
+# Home page setting
+index_generator:
+  path: ''
+  per_page: 10
+  order_by: -date
+
+# Category & Tag
+default_category: uncategorized
+category_map:
+  CTF: CTF
+  Web安全: web-security
+  逆向分析: reverse-engineering
+  二进制安全: binary-security
+  密码学: cryptography
+  工具教程: tools
+  靶场通关: labs
+  学习笔记: notes
+tag_map:
+
+# Date / Time format
+date_format: YYYY-MM-DD
+time_format: HH:mm:ss
+updated_option: 'mtime'
+
+# Pagination
+per_page: 10
+pagination_dir: page
+
+# Extensions
+## Plugins
+theme: butterfly
+
+# Deployment
+## Docs: https://hexo.io/docs/one-command-deployment
+deploy:
+  type: git
+  repo: git@github.com:GU-007/GU-007.github.io.git
+  branch: main
+  message: "Site updated: {{ now('YYYY-MM-DD HH:mm:ss') }}"
+
+# ==========================================
+# Plugin Configurations
+# ==========================================
+
+# Local Search
+# https://github.com/next-theme/hexo-generator-searchdb
+search:
+  path: search.xml
+  field: post
+  content: true
+  format: html
+
+# RSS Feed
+# https://github.com/hexojs/hexo-generator-feed
+feed:
+  enable: true
+  type: atom
+  path: atom.xml
+  limit: 20
+  hub:
+  content: true
+  content_limit: 140
+  content_limit_delim: ' '
+  order_by: -date
+  icon: /img/favicon.png
+  autodiscovery: true
+
+# Abbrlink - Permanent links for posts
+# https://github.com/rozbo/hexo-abbrlink
+abbrlink:
+  alg: crc32  # crc16(default) / crc32
+  rep: hex    # dec(default) / hex
+  drafts: false
+
+# Word Counter
+# https://github.com/next-theme/hexo-word-counter
+symbols_count_time:
+  symbols: true
+  time: true
+  total_symbols: true
+  total_time: true
+  exclude_codeblock: false
+  awl: 4
+  wpm: 275
+  suffix: false

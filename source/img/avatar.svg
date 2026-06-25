@@ -1,0 +1,9 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 200 200">
+  <!-- Circle background -->
+  <circle cx="100" cy="100" r="100" fill="#FFF8F0" stroke="#D4764E" stroke-width="4"/>
+  <!-- Maple leaf shape -->
+  <path d="M100 25 L108 65 L145 48 L118 78 L155 90 L118 96 L138 130 L104 108 L100 165 L96 108 L62 130 L82 96 L45 90 L82 78 L55 48 L92 65 Z"
+        fill="#C44536" stroke="#8B4513" stroke-width="2"/>
+  <!-- Text -->
+  <text x="100" y="190" text-anchor="middle" font-size="18" font-weight="bold" fill="#8B4513" font-family="sans-serif">G7</text>
+</svg>

@@ -1,0 +1,308 @@
+/* ==========================================
+   Maple Leaf Custom Theme (枫叶自定义主题)
+   For Hexo Butterfly Theme
+   ========================================== */
+
+/* ===== Maple Leaf Color Palette =====
+   Main Orange:    #D4764E  (rust orange / 锈橙)
+   Deep Red:       #C44536  (maple red / 深枫红)
+   Soft Peach:     #E8A87C  (peach / 柔和桃色)
+   Warm Cream:     #FFF8F0  (background / 暖奶油色)
+   Warm Brown:     #A0522D  (sienna / 赭色)
+   Dark Brown:     #8B4513  (saddle brown / 鞍褐色)
+   ========================================== */
+
+/* ===== Global Background ===== */
+body {
+  background-color: #FFF8F0;
+  background-image: url('/img/maple-bg.jpg');
+  background-attachment: fixed;
+  background-size: cover;
+  background-position: center;
+}
+
+/* Warm overlay on background */
+#body-wrap {
+  background: rgba(255, 248, 240, 0.75);
+}
+
+/* ===== Site Title / Brand ===== */
+#site-title {
+  font-weight: 700;
+}
+
+#site-title:hover {
+  color: #C44536 !important;
+}
+
+/* ===== Navbar ===== */
+#nav {
+  background: rgba(255, 248, 240, 0.92) !important;
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
+}
+
+/* ===== Cards ===== */
+.card-widget,
+.recent-posts > .recent-post-item,
+#post,
+#page,
+#archive,
+#category,
+#tag {
+  background: rgba(255, 255, 255, 0.88);
+  backdrop-filter: blur(4px);
+  -webkit-backdrop-filter: blur(4px);
+  border-radius: 12px !important;
+  box-shadow: 0 2px 12px rgba(139, 69, 19, 0.08);
+  transition: box-shadow 0.3s ease, transform 0.3s ease;
+}
+
+.recent-posts > .recent-post-item:hover {
+  box-shadow: 0 4px 20px rgba(212, 118, 78, 0.18);
+  transform: translateY(-2px);
+}
+
+/* ===== Article Title Links ===== */
+a.article-title,
+a.post-title {
+  color: #8B4513 !important;
+  transition: color 0.2s ease;
+}
+
+a.article-title:hover,
+a.post-title:hover {
+  color: #C44536 !important;
+}
+
+/* ===== Headings ===== */
+h1, h2, h3, h4, h5, h6 {
+  color: #8B4513;
+}
+
+h2 {
+  border-left: 4px solid #D4764E;
+  padding-left: 12px;
+}
+
+/* ===== Links ===== */
+#article-container a,
+#post a {
+  color: #D4764E;
+  border-bottom: 1px dotted #E8A87C;
+  transition: all 0.2s ease;
+}
+
+#article-container a:hover,
+#post a:hover {
+  color: #C44536;
+  border-bottom: 1px solid #C44536;
+}
+
+/* ===== Blockquotes ===== */
+blockquote {
+  border-left: 4px solid #D4764E !important;
+  background: rgba(212, 118, 78, 0.06) !important;
+  border-radius: 0 8px 8px 0;
+}
+
+/* ===== Code Blocks ===== */
+code {
+  color: #C44536 !important;
+  background: rgba(139, 69, 19, 0.06) !important;
+  border-radius: 4px;
+}
+
+/* ===== Tables ===== */
+table {
+  border-collapse: collapse;
+  width: 100%;
+  border-radius: 8px;
+  overflow: hidden;
+}
+
+table th {
+  background: linear-gradient(135deg, #D4764E, #C44536);
+  color: white;
+  font-weight: 600;
+}
+
+table tr:nth-child(even) {
+  background: rgba(232, 168, 124, 0.08);
+}
+
+table tr:hover {
+  background: rgba(212, 118, 78, 0.12);
+}
+
+/* ===== Buttons ===== */
+a.button,
+.btn {
+  background: linear-gradient(135deg, #D4764E, #C44536) !important;
+  color: white !important;
+  border-radius: 20px !important;
+  transition: all 0.3s ease;
+}
+
+a.button:hover,
+.btn:hover {
+  box-shadow: 0 4px 14px rgba(196, 69, 54, 0.35);
+  transform: translateY(-1px);
+}
+
+/* ===== Tags ===== */
+.tag-cloud a {
+  color: #D4764E !important;
+  transition: all 0.2s ease;
+}
+
+.tag-cloud a:hover {
+  color: #C44536 !important;
+  background: rgba(212, 118, 78, 0.1) !important;
+}
+
+/* ===== Category List ===== */
+.category-list a {
+  color: #8B4513 !important;
+}
+
+.category-list a:hover {
+  color: #C44536 !important;
+}
+
+/* ===== Paginator ===== */
+#pagination .page-number {
+  color: #D4764E;
+}
+
+#pagination .page-number.current {
+  background: linear-gradient(135deg, #D4764E, #C44536);
+  color: white;
+  border-radius: 50%;
+}
+
+/* ===== Sidebar Cards ===== */
+.card-announcement {
+  background: linear-gradient(135deg, rgba(212, 118, 78, 0.08), rgba(196, 69, 54, 0.05));
+  border-left: 3px solid #D4764E;
+}
+
+/* ===== TOC ===== */
+#toc {
+  border-left: 3px solid #E8A87C;
+}
+
+.toc-link {
+  color: #A0522D !important;
+}
+
+.toc-link.active {
+  color: #C44536 !important;
+  font-weight: 600;
+}
+
+/* ===== Footer ===== */
+#footer-wrap {
+  color: #A0522D;
+}
+
+#footer-wrap a {
+  color: #D4764E;
+}
+
+#footer-wrap a:hover {
+  color: #C44536;
+}
+
+/* ===== Scrollbar ===== */
+::-webkit-scrollbar {
+  width: 8px;
+}
+
+::-webkit-scrollbar-track {
+  background: rgba(255, 248, 240, 0.5);
+}
+
+::-webkit-scrollbar-thumb {
+  background: linear-gradient(#D4764E, #C44536);
+  border-radius: 4px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: #C44536;
+}
+
+/* ===== Selection ===== */
+::selection {
+  background: rgba(232, 168, 124, 0.4);
+  color: #8B4513;
+}
+
+/* ===== Dark Mode Overrides ===== */
+[data-theme="dark"] body {
+  background-color: #1a1a2e;
+}
+
+[data-theme="dark"] #body-wrap {
+  background: rgba(26, 26, 46, 0.82);
+}
+
+[data-theme="dark"] #nav {
+  background: rgba(26, 26, 46, 0.92) !important;
+}
+
+[data-theme="dark"] .card-widget,
+[data-theme="dark"] .recent-posts > .recent-post-item,
+[data-theme="dark"] #post,
+[data-theme="dark"] #page {
+  background: rgba(30, 30, 50, 0.88);
+  box-shadow: 0 2px 12px rgba(0, 0, 0, 0.3);
+}
+
+[data-theme="dark"] h1,
+[data-theme="dark"] h2,
+[data-theme="dark"] h3 {
+  color: #E8A87C;
+}
+
+[data-theme="dark"] h2 {
+  border-left-color: #D4764E;
+}
+
+[data-theme="dark"] a.article-title,
+[data-theme="dark"] a.post-title {
+  color: #E8A87C !important;
+}
+
+[data-theme="dark"] #article-container a {
+  color: #E8A87C;
+}
+
+[data-theme="dark"] blockquote {
+  border-left-color: #D4764E !important;
+  background: rgba(212, 118, 78, 0.1) !important;
+}
+
+[data-theme="dark"] table th {
+  background: linear-gradient(135deg, #A0522D, #8B4513);
+}
+
+/* ===== Maple Leaf Decorative Elements ===== */
+
+/* Add maple leaf before article headings */
+#article-container h2::before {
+  content: '🍁 ';
+  font-size: 0.85em;
+}
+
+/* ===== Responsive ===== */
+@media screen and (max-width: 768px) {
+  .card-widget,
+  .recent-posts > .recent-post-item {
+    border-radius: 8px !important;
+  }
+
+  #body-wrap {
+    background: rgba(255, 248, 240, 0.85);
+  }
+}

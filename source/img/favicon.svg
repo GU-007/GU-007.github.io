@@ -1,0 +1,15 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100">
+  <!-- Maple Leaf Icon -->
+  <defs>
+    <linearGradient id="leafGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" style="stop-color:#D4764E;stop-opacity:1" />
+      <stop offset="50%" style="stop-color:#C44536;stop-opacity:1" />
+      <stop offset="100%" style="stop-color:#8B4513;stop-opacity:1" />
+    </linearGradient>
+  </defs>
+  <!-- Simplified maple leaf shape -->
+  <path d="M50 10 L55 30 L75 20 L60 38 L80 45 L60 48 L70 65 L52 52 L50 80 L48 52 L30 65 L40 48 L20 45 L40 38 L25 20 L45 30 Z"
+        fill="url(#leafGrad)" stroke="#8B4513" stroke-width="1.5"/>
+  <!-- Stem -->
+  <line x1="50" y1="80" x2="50" y2="98" stroke="#8B4513" stroke-width="3" stroke-linecap="round"/>
+</svg>

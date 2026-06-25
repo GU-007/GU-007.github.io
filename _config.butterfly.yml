@@ -1,0 +1,586 @@
+# ==========================================
+# Hexo Butterfly Theme Configuration
+# 枫叶主题 (Maple Leaf Theme) 定制
+# Docs: https://butterfly.js.org/
+# ==========================================
+
+# --------------------------------------
+# Navigation Settings
+# --------------------------------------
+nav:
+  logo:
+  display_title: true
+  display_post_title: true
+  fixed: false
+
+menu:
+  首页: / || fas fa-home
+  分类: /categories/ || fas fa-folder-open
+  标签: /tags/ || fas fa-tags
+  归档: /archives/ || fas fa-archive
+  关于: /about/ || fas fa-leaf
+  搜索: /search/ || fas fa-search
+  RSS: /atom.xml || fas fa-rss
+
+# --------------------------------------
+# Code Blocks Settings
+# --------------------------------------
+code_blocks:
+  theme: darker
+  macStyle: true
+  height_limit: false
+  word_wrap: true
+  copy: true
+  language: true
+  shrink: false
+  fullpage: false
+
+# Social Links
+social:
+  fab fa-github: https://github.com/GU-007 || Github || '#24292e'
+  fas fa-envelope: mailto:3035201614@qq.com || Email || '#4a7dbe'
+
+# --------------------------------------
+# Image Settings
+# --------------------------------------
+favicon: /img/favicon.svg
+
+avatar:
+  img: /img/avatar.svg
+  effect: true
+
+disable_top_img: false
+
+# Default banner when page doesn't specify one
+default_top_img: /img/maple-bg.jpg
+
+index_img: /img/maple-bg.jpg
+archive_img: /img/maple-bg.jpg
+tag_img: /img/maple-bg.jpg
+category_img: /img/maple-bg.jpg
+
+# Footer background
+footer_img: false
+
+# Website background - warm cream
+background: '#FFF8F0'
+
+cover:
+  index_enable: true
+  aside_enable: true
+  archives_enable: true
+  default_cover:
+
+# 404 page
+error_404:
+  enable: true
+  subtitle: '🍁 页面未找到 - Page Not Found'
+  background: /img/maple-bg.jpg
+
+post_meta:
+  page:
+    date_type: created
+    date_format: date
+    categories: true
+    tags: true
+    label: true
+  post:
+    position: left
+    date_type: both
+    date_format: date
+    categories: true
+    tags: true
+    label: true
+
+# --------------------------------------
+# Homepage Settings
+# --------------------------------------
+index_site_info_top:
+index_top_img_height:
+
+# Subtitle with typewriter effect
+subtitle:
+  enable: true
+  effect: true
+  typed_option:
+  source: false
+  sub:
+    - 🍁 记录网络安全的每一步
+    - 🛡️ Hacking is not a crime, it's a craft
+    - 🔐 Security is a journey, not a destination
+    - 💻 分享技术，共同成长
+
+# Homepage article layout
+index_layout: 3
+
+index_post_content:
+  method: 3
+  length: 500
+
+# --------------------------------------
+# Post Settings
+# --------------------------------------
+toc:
+  post: true
+  page: false
+  number: true
+  expand: false
+  style_simple: false
+  scroll_percent: true
+
+post_copyright:
+  enable: true
+  decode: false
+  author_href: https://github.com/GU-007
+  license: CC BY-NC-SA 4.0
+  license_url: https://creativecommons.org/licenses/by-nc-sa/4.0/
+
+# Reward/Sponsor
+reward:
+  enable: false
+  text: 如果文章对你有帮助，欢迎赞赏
+  QR_code:
+
+# Post edit link
+post_edit:
+  enable: false
+  url:
+
+# Related posts
+related_post:
+  enable: true
+  limit: 6
+  date_type: created
+
+post_pagination: 1
+
+# Outdated notice
+noticeOutdate:
+  enable: true
+  style: flat
+  limit_day: 180
+  position: top
+  message_prev: 距离上次更新已过
+  message_next: 天，文章内容可能已过时。
+
+# --------------------------------------
+# Footer Settings
+# --------------------------------------
+footer:
+  nav:
+  owner:
+    enable: true
+    since: 2026
+  copyright:
+    enable: true
+    version: true
+  custom_text: 🍁 枫叶安全笔记 — Keep Learning, Keep Hacking
+
+# --------------------------------------
+# Aside Settings
+# --------------------------------------
+aside:
+  enable: true
+  hide: false
+  button: true
+  mobile: true
+  position: right
+  display:
+    archive: true
+    tag: true
+    category: true
+  card_author:
+    enable: true
+    description: 网络安全学习者 | 记录成长的每一步 🍁
+    button:
+      enable: true
+      icon: fab fa-github
+      text: GitHub
+      link: https://github.com/GU-007
+  card_announcement:
+    enable: true
+    content: 🛡️ 欢迎来到我的安全技术博客<br>分享Web安全、渗透测试、CTF等学习笔记
+  card_recent_post:
+    enable: true
+    limit: 5
+    sort: date
+    sort_order:
+  card_newest_comments:
+    enable: false
+    sort_order:
+    limit: 6
+    storage: 10
+    avatar: true
+  card_categories:
+    enable: true
+    limit: 8
+    expand: none
+    sort_order:
+  card_tags:
+    enable: true
+    limit: 40
+    color: true
+    custom_colors:
+    orderby: random
+    order: 1
+    sort_order:
+  card_archives:
+    enable: true
+    type: monthly
+    format: YYYY年MM月
+    order: -1
+    limit: 8
+    sort_order:
+  card_post_series:
+    enable: true
+    series_title: false
+    orderBy: 'date'
+    order: -1
+  card_webinfo:
+    enable: true
+    post_count: true
+    last_push_date: true
+    sort_order:
+    runtime_date: "2026/06/25"
+
+# --------------------------------------
+# Bottom Right Buttons
+# --------------------------------------
+rightside_bottom:
+
+translate:
+  enable: false
+  default: 繁
+  defaultEncoding: 2
+  translateDelay: 0
+  msgToTraditionalChinese: '繁'
+  msgToSimplifiedChinese: '簡'
+
+readmode: true
+
+# Dark Mode
+darkmode:
+  enable: true
+  button: true
+  autoChangeMode: 1
+  start:
+  end:
+
+rightside_scroll_percent: false
+
+rightside_item_order:
+  enable: false
+  hide:
+  show:
+
+rightside_config_animation: true
+
+# --------------------------------------
+# Global Settings
+# --------------------------------------
+anchor:
+  auto_update: false
+  click_to_scroll: false
+
+photofigcaption: false
+
+copy:
+  enable: true
+  copyright:
+    enable: true
+    limit_count: 150
+
+wordcount:
+  enable: true
+  post_wordcount: true
+  min2read: true
+  total_wordcount: true
+
+busuanzi:
+  site_uv: true
+  site_pv: true
+  page_pv: true
+
+# --------------------------------------
+# Math
+# --------------------------------------
+math:
+  use:
+  per_page: true
+  hide_scrollbar: false
+  mathjax:
+    enableMenu: true
+    tags: none
+  katex:
+    copy_tex: false
+
+# --------------------------------------
+# Search - Local Search
+# --------------------------------------
+search:
+  use: local_search
+  placeholder: 搜索文章...
+
+  local_search:
+    preload: true
+    top_n_per_article: 1
+    unescape: false
+    pagination:
+      enable: false
+      hitsPerPage: 8
+    CDN:
+
+# --------------------------------------
+# Share System
+# --------------------------------------
+share:
+  use: sharejs
+  sharejs:
+    sites: facebook,x,wechat,weibo,qq
+
+# --------------------------------------
+# Comments - Giscus
+# --------------------------------------
+# 使用前需要:
+# 1. 在 https://github.com/GU-007/GU-007.github.io 仓库 Settings 中启用 Discussions
+# 2. 访问 https://giscus.app/ 获取 repo_id, category_id
+comments:
+  use: Giscus
+  text: true
+  lazyload: true
+  count: false
+  card_post_count: false
+
+giscus:
+  repo: GU-007/GU-007.github.io
+  repo_id: 'REPLACE_ME'
+  category: Announcements
+  category_id: 'REPLACE_ME'
+  light_theme: light
+  dark_theme: dark_dimmed
+  js:
+  option:
+
+# --------------------------------------
+# Chat Services (disabled)
+# --------------------------------------
+chat:
+  use:
+  rightside_button: false
+  button_hide_show: false
+
+# --------------------------------------
+# Analytics (disabled by default)
+# --------------------------------------
+baidu_analytics:
+google_analytics:
+cloudflare_analytics:
+microsoft_clarity:
+
+# --------------------------------------
+# Beauty / Effects
+# --------------------------------------
+
+# Theme Color - Maple Leaf Autumn Palette 🍁
+theme_color:
+  enable: true
+  main: "#D4764E"
+  paginator: "#C44536"
+  button_hover: "#C44536"
+  text_selection: "#E8A87C"
+  link_color: "#D4764E"
+  meta_color: "#A0522D"
+  hr_color: "#E8A87C"
+  code_foreground: "#C44536"
+  code_background: "rgba(139, 69, 19, 0.08)"
+  toc_color: "#D4764E"
+  blockquote_padding_color: "#D4764E"
+  blockquote_background_color: "rgba(212, 118, 78, 0.1)"
+  scrollbar_color: "#D4764E"
+  meta_theme_color_light: "#FFF8F0"
+  meta_theme_color_dark: "#1a1a2e"
+
+category_ui:
+tag_ui:
+
+rounded_corners_ui: true
+text_align_justify: false
+
+mask:
+  header: true
+  footer: true
+
+preloader:
+  enable: true
+  source: 1
+  pace_css_url:
+
+enter_transitions: true
+display_mode: light
+
+beautify:
+  enable: false
+  field: post
+  title_prefix_icon:
+  title_prefix_icon_color:
+
+font:
+  global_font_size:
+  code_font_size:
+  font_family:
+  code_font_family:
+
+blog_title_font:
+  font_link:
+  font_family:
+
+hr_icon:
+  enable: true
+  icon: '\f0da'
+  icon_top:
+
+# Power mode (off - too distracting for security blog)
+activate_power_mode:
+  enable: false
+  colorful: true
+  shake: true
+  mobile: false
+
+# Background canvas
+canvas_ribbon:
+  enable: false
+  size: 150
+  alpha: 0.6
+  zIndex: -1
+  click_to_change: false
+  mobile: false
+
+canvas_fluttering_ribbon:
+  enable: false
+  mobile: false
+
+canvas_nest:
+  enable: false
+  color: '139,69,19'
+  opacity: 0.7
+  zIndex: -1
+  count: 99
+  mobile: false
+
+# Mouse effects
+fireworks:
+  enable: false
+  zIndex: 9999
+  mobile: false
+
+click_heart:
+  enable: false
+  mobile: false
+
+clickShowText:
+  enable: false
+  text:
+  fontSize: 15px
+  random: false
+  mobile: false
+
+# --------------------------------------
+# Lightbox
+# --------------------------------------
+lightbox: fancybox
+
+# --------------------------------------
+# Tag Plugins
+# --------------------------------------
+
+series:
+  enable: true
+  orderBy: 'title'
+  order: 1
+  number: true
+
+# Mermaid diagrams - useful for security flowcharts
+mermaid:
+  enable: true
+  code_write: false
+  theme:
+    light: default
+    dark: dark
+  open_in_new_tab: true
+  zoom_pan: true
+
+chartjs:
+  enable: false
+  fontColor:
+    light: 'rgba(0, 0, 0, 0.8)'
+    dark: 'rgba(255, 255, 255, 0.8)'
+  borderColor:
+    light: 'rgba(0, 0, 0, 0.1)'
+    dark: 'rgba(255, 255, 255, 0.2)'
+  scale_ticks_backdropColor:
+    light: 'transparent'
+    dark: 'transparent'
+
+# Note callouts
+note:
+  style: flat
+  icons: true
+  border_radius: 3
+  light_bg_offset: 0
+
+# --------------------------------------
+# Other Settings
+# --------------------------------------
+pjax:
+  enable: false
+  exclude:
+
+aplayerInject:
+  enable: false
+  per_page: true
+
+snackbar:
+  enable: false
+  position: bottom-left
+  bg_light: '#D4764E'
+  bg_dark: '#1f1f1f'
+
+instantpage: true
+
+lazyload:
+  enable: true
+  native: true
+  field: site
+  placeholder:
+  blur: false
+
+pwa:
+  enable: false
+  manifest:
+  apple_touch_icon:
+  favicon_32_32:
+  favicon_16_16:
+  mask_icon:
+
+Open_Graph_meta:
+  enable: true
+  option:
+
+structured_data:
+  enable: false
+  alternate_name:
+
+css_prefix: true
+
+# Custom CSS injection
+inject:
+  head:
+    - <link rel="stylesheet" href="/css/custom.css">
+  bottom:
+
+CDN:
+  internal_provider: local
+  third_party_provider: jsdelivr
+  version: true
+  custom_format:
+  option:

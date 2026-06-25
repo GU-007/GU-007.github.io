@@ -1,9 +1,13 @@
 ---
-title: "Git指令汇总"
+title: Git指令汇总
 date: 2026-04-30
-tags: ["Git"]
-categories: ["工具备忘"]  
+updated: 2026-05-07
+tags: [Git]
+categories: 工具教程
+abbrlink: git-instructions
+description: Git常用命令汇总，包括克隆、提交、推送、分支操作等基础指令
 ---
+
 **命令行工具选择**：
 在Windows上，可使用 **Git Bash** 以避免路径和环境变量问题。
 注意在Git Bash中，**磁盘路径应写为 `/d/MyProject/` 形式，而非 `D:\MyProject\`。**
@@ -43,5 +47,3 @@ categories: ["工具备忘"]
 ---
 ##### 修改记录
 - 2026-05-07：修正 `git add .` 的说明，明确其递归添加子目录；新增 Git Bash 路径写法、`git pull`、分支切换/删除及工作区注释。
-
-
