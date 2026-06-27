@@ -353,9 +353,11 @@ comments:
 
 giscus:
   repo: GU-007/GU-007.github.io
-  repo_id: 'REPLACE_ME'
+  repo_id: 'R_kgDOSP32XQ'
   category: Announcements
-  category_id: 'REPLACE_ME'
+  category_id: 'DIC_kwDOSP32Xc4C_-T-'
+  mapping: pathname
+  lang: zh-CN
   light_theme: light
   dark_theme: dark_dimmed
   js:
