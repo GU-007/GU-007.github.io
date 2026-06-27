@@ -50,12 +50,34 @@ body {
 #archive,
 #category,
 #tag {
-  background: rgba(255, 255, 255, 0.88);
+  background: rgba(255, 255, 255, 0.95);
   backdrop-filter: blur(4px);
   -webkit-backdrop-filter: blur(4px);
   border-radius: 12px !important;
   box-shadow: 0 2px 12px rgba(139, 69, 19, 0.08);
   transition: box-shadow 0.3s ease, transform 0.3s ease;
+}
+
+/* ===== Archive Page Readability ===== */
+.article-sort-title {
+  color: #3e1f0d !important;
+}
+
+.article-sort-item.year {
+  color: #5c2d15 !important;
+  font-weight: 700;
+}
+
+.article-sort-item-time {
+  color: #6b3a1f !important;
+}
+
+.article-sort-item-title {
+  color: #3e1f0d !important;
+}
+
+.article-sort-item-title:hover {
+  color: #C44536 !important;
 }
 
 .recent-posts > .recent-post-item:hover {
@@ -257,6 +279,16 @@ a.button:hover,
 [data-theme="dark"] #page {
   background: rgba(30, 30, 50, 0.88);
   box-shadow: 0 2px 12px rgba(0, 0, 0, 0.3);
+}
+
+[data-theme="dark"] .article-sort-title,
+[data-theme="dark"] .article-sort-item.year,
+[data-theme="dark"] .article-sort-item-title {
+  color: #E8A87C !important;
+}
+
+[data-theme="dark"] .article-sort-item-time {
+  color: #D4A574 !important;
 }
 
 [data-theme="dark"] h1,

@@ -104,10 +104,9 @@ subtitle:
   typed_option:
   source: false
   sub:
-    - 🍁 记录网络安全的每一步
-    - 🛡️ Hacking is not a crime, it's a craft
-    - 🔐 Security is a journey, not a destination
-    - 💻 分享技术，共同成长
+    - 🛡️ 个人安全技术笔记
+    - 🔐 Study Web Penetration day by day
+    - 🍁 An empty doorway and a maple leaf.
 
 # Homepage article layout
 index_layout: 3
@@ -137,7 +136,7 @@ post_copyright:
 # Reward/Sponsor
 reward:
   enable: false
-  text: 如果文章对你有帮助，欢迎赞赏
+  text: 若本文对你有所帮助，可以请我喝一杯咖啡
   QR_code:
 
 # Post edit link
@@ -173,7 +172,7 @@ footer:
   copyright:
     enable: true
     version: true
-  custom_text: 🍁 枫叶安全笔记 — Keep Learning, Keep Hacking
+  custom_text: 🍁 Maple安全日志 — Keep Learning, Keep Hacking
 
 # --------------------------------------
 # Aside Settings
@@ -190,7 +189,7 @@ aside:
     category: true
   card_author:
     enable: true
-    description: 网络安全学习者 | 记录成长的每一步 🍁
+    description: 网络安全学习者 | 🍁
     button:
       enable: true
       icon: fab fa-github
@@ -198,7 +197,7 @@ aside:
       link: https://github.com/GU-007
   card_announcement:
     enable: true
-    content: 🛡️ 欢迎来到我的安全技术博客<br>分享Web安全、渗透测试、CTF等学习笔记
+    content: 🛡️ 欢迎来到我的安全技术博客<br>分享Web安全、漏洞分析、CTF等学习笔记
   card_recent_post:
     enable: true
     limit: 5

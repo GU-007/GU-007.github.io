@@ -3,9 +3,9 @@
 ## Source: https://github.com/hexojs/hexo/
 
 # Site
-title: "G7's Security Notes 🍁"
-subtitle: '网络安全学习日志 | Cybersecurity Learning Log'
-description: '记录Web安全、渗透测试、逆向分析等网络安全领域的学习笔记与技术分享'
+title: "Maple(G7)'s WebSecDiary 🍁"
+subtitle: 'The quieter you become, the more you are able to hear.'
+description: 'Web安全学习日志与漏洞分析日常'
 keywords:
   - 网络安全
   - Web安全
@@ -13,7 +13,7 @@ keywords:
   - CTF
   - 渗透测试
   - Cybersecurity
-author: G7
+author: Maple(G7)
 language: zh-CN
 timezone: 'Asia/Shanghai'
 
@@ -73,9 +73,6 @@ default_category: uncategorized
 category_map:
   CTF: CTF
   Web安全: web-security
-  逆向分析: reverse-engineering
-  二进制安全: binary-security
-  密码学: cryptography
   工具教程: tools
   靶场通关: labs
   学习笔记: notes
