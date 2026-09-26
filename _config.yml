@@ -69,13 +69,8 @@ index_generator:
   order_by: -date
 
 # Category & Tag
-default_category: uncategorized
+default_category: 学习日志
 category_map:
-  CTF: CTF
-  Web安全: web-security
-  工具教程: tools
-  靶场通关: labs
-  学习笔记: notes
 tag_map:
 
 # Date / Time format

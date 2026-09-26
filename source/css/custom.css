@@ -338,3 +338,11 @@ a.button:hover,
     background: rgba(255, 248, 240, 0.85);
   }
 }
+
+/* ===== Hide the "Tags" counter in the author card =====
+   作者卡片底部有三个统计：文章 / 标签 / 分类
+   本站不使用标签，所以隐藏中间那一项（第 2 个 a），保留文章和分类。
+   Theme: hexo-theme-butterfly/layout/includes/widget/card_author.pug */
+#aside-content .card-info .site-data a:nth-child(2) {
+  display: none;
+}

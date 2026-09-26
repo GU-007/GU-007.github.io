@@ -1,0 +1,11 @@
+# 友链数据
+# 用法：在下面的 link_list 里按格式添加，name / link / avatar / descr 四项
+# 换行后保存，推送到 GitHub 就会自动更新
+
+- class_name: 我的师傅们
+  class_desc: 引路的人
+  link_list:
+    - name: 示例友链（请替换）
+      link: https://example.com
+      avatar: https://example.com/avatar.png
+      descr: 这里写一句话介绍

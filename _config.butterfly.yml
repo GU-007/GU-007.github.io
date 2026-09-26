@@ -15,9 +15,8 @@ nav:
 
 menu:
   首页: / || fas fa-home
-  分类: /categories/ || fas fa-folder-open
-  标签: /tags/ || fas fa-tags
-  归档: /archives/ || fas fa-archive
+  学习日志: /archives/ || fas fa-book
+  友链: /link/ || fas fa-link
   关于: /about/ || fas fa-leaf
   RSS: /atom.xml || fas fa-rss
 
@@ -81,14 +80,14 @@ post_meta:
     date_type: created
     date_format: date
     categories: true
-    tags: true
+    tags: false
     label: true
   post:
     position: left
     date_type: both
     date_format: date
     categories: true
-    tags: true
+    tags: false
     label: true
 
 # --------------------------------------
@@ -185,8 +184,8 @@ aside:
   position: right
   display:
     archive: true
-    tag: true
-    category: true
+    tag: false
+    category: false
   card_author:
     enable: true
     description: 网络安全学习者 | 🍁
@@ -210,12 +209,12 @@ aside:
     storage: 10
     avatar: true
   card_categories:
-    enable: true
+    enable: false
     limit: 8
     expand: none
     sort_order:
   card_tags:
-    enable: true
+    enable: false
     limit: 40
     color: true
     custom_colors:
