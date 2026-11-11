@@ -1,9 +1,16 @@
 .DS_Store
 Thumbs.db
-db.json
 *.log
+db.json
+
+# 本地工作目录与原始素材，不发布
+_design/
+_oldsite/
+.claude/
+设计素材（给dsh看的）/
+
+# 旧 Hexo 产物
 node_modules/
 public/
 .deploy*/
 _multiconfig.yml
-_oldsite/

