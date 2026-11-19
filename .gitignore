@@ -14,3 +14,7 @@ node_modules/
 public/
 .deploy*/
 _multiconfig.yml
+
+# ¹¹½¨½Å±¾
+_build/
+__pycache__/
