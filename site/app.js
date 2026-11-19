@@ -376,7 +376,7 @@
 
     entries.forEach(function (en) {
       var cat = en.getAttribute('data-cat') || '';
-      var okCat = curCat === '*' || cat === curCat;
+      var okCat = curCat === '*' ? cat !== 'WP' : cat === curCat;
       var text = en.textContent.toLowerCase();
       var okTerm = !term || text.indexOf(term) !== -1;
       var ok = okCat && okTerm;

