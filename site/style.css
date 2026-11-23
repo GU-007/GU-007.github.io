@@ -1945,6 +1945,10 @@ body.page-projects .topbar{
 }
 .page-wp .rail-more--right .rail-list a i{ margin-top: 2px; }
 
+/* 代码块长行折行，避免横向截断 */
+.page-post .code pre{ white-space: pre-wrap; overflow-wrap: anywhere; }
+.page-post .code code{ word-break: break-word; }
+
 /* =========================================================
    页脚
    ========================================================= */

