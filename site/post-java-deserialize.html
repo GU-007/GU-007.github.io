@@ -9,7 +9,7 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Space+Grotesk:wght@400;500;700&family=JetBrains+Mono:wght@400;500&family=Noto+Serif+SC:wght@400;600;900&family=Noto+Sans+SC:wght@300;400;500&display=swap" rel="stylesheet">
-<link rel="stylesheet" href="style.css?v=v17">
+<link rel="stylesheet" href="style.css?v=v18">
 </head>
 <body class="page-post">
 
@@ -64,7 +64,7 @@
     <aside class="toc">
       <div class="toc-sticky">
         <p class="rail-h mono">INDEX</p>
-        <ol class="toc-list"><li class="toc-item toc-l2"><a href="#s1" data-toc="s1"><span class="toc-no">01</span><span class="toc-tx">序列化&反序列化</span></a></li><li class="toc-item toc-l2"><a href="#s2" data-toc="s2"><span class="toc-no">02</span><span class="toc-tx">Java序列化&反序列化代码实现</span></a></li><li class="toc-item toc-l2"><a href="#s3" data-toc="s3"><span class="toc-no">03</span><span class="toc-tx">序列化安全问题的产生</span></a></li><li class="toc-item toc-l3"><a href="#s4" data-toc="s4"><span class="toc-no">04</span><span class="toc-tx">漏洞形式</span></a></li><li class="toc-item toc-l3"><a href="#s5" data-toc="s5"><span class="toc-no">05</span><span class="toc-tx">触发路径</span></a></li><li class="toc-item toc-l3"><a href="#s6" data-toc="s6"><span class="toc-no">06</span><span class="toc-tx">实战——URLDNS</span></a></li></ol>
+        <ol class="toc-list"><li class="toc-item toc-l2"><a href="#s1" data-toc="s1"><span class="toc-no">01</span><span class="toc-tx">序列化&反序列化</span></a></li><li class="toc-item toc-l2"><a href="#s2" data-toc="s2"><span class="toc-no">02</span><span class="toc-tx">Java序列化&反序列化代码实现</span></a></li><li class="toc-item toc-l2"><a href="#s3" data-toc="s3"><span class="toc-no">03</span><span class="toc-tx">序列化安全问题的产生</span></a></li><li class="toc-item toc-l3"><a href="#s4" data-toc="s4"><span class="toc-no">04</span><span class="toc-tx">漏洞形式</span></a></li><li class="toc-item toc-l3"><a href="#s5" data-toc="s5"><span class="toc-no">05</span><span class="toc-tx">触发路径</span></a></li><li class="toc-item toc-l4"><a href="#s6" data-toc="s6"><span class="toc-no">06</span><span class="toc-tx">实战——URLDNS</span></a></li><li class="toc-item toc-l5"><a href="#s7" data-toc="s7"><span class="toc-no">07</span><span class="toc-tx">手工跟进URLDNS的利用链</span></a></li><li class="toc-item toc-l5"><a href="#s8" data-toc="s8"><span class="toc-no">08</span><span class="toc-tx">URLDNS 反序列化利用链的 POC</span></a></li></ol>
         <img class="toc-mo" src="img/mo-01.webp" alt="" aria-hidden="true">
       </div>
     </aside>
@@ -196,7 +196,7 @@
 <p>source入口类：重写 <code>readObject</code> 调用常见的函数；参数类型宽泛，比如可以传入一个类作为参数；最好 <code>jdk</code> 自带</p>
 <p>gadget chain调用链：找同名方法，参数类型相同，调用传递</p>
 <p>sink执行类：链的最后一步，真正执行危险操作的类和方法（RCE，SSRF，写文件等）</p>
-<h3 id="s6">实战——URLDNS<a class="h-link" href="#s6" aria-hidden="true">§</a></h3>
+<h4 id="s6">实战——URLDNS<a class="h-link" href="#s6" aria-hidden="true">§</a></h4>
 <p><strong>URLDNS：</strong> URL（网址/对象域名）+ DNS（域名解析请求），是一个极简的反序列化验证链，适用于检测（是序列化学习里最简单的一条“探路链”）：</p>
 <p>路线是<code>HashMap.readObject()</code> → <code>HashMap.putVal()</code> → <code>HashMap.hash()</code> → <code>URL.hashCode()</code>。把一个URL对象放进<code>HashMap</code> 的 <code>key</code> 并反序列化时，<code>URL.hashCode()</code> 会触发一次 <strong>DNS 解析请求</strong>。</p>
 <ul><li>只用了Java内置的类，不用装第三方仓库。</li><li>只能发送DNS请求，不能干别的，所以不算是利用，但是非常适合验证“目标有没有真的在反序列化”，如果确认有洞，再更换真正的利用链</li></ul>
@@ -210,7 +210,7 @@
     → HashMap.putVal()       [内部放元素的工人]
       → HashMap.hash(key)    [算 key 的哈希]
         → URL.hashCode()     [触发 DNS 查询]</code></pre></div>
-<h4 id="s7">手工跟进URLDNS的利用链<a class="h-link" href="#s7" aria-hidden="true">§</a></h4>
+<h5 id="s7">手工跟进URLDNS的利用链<a class="h-link" href="#s7" aria-hidden="true">§</a></h5>
 <p>我们通过调用<code>hashmap.put(url, 1)</code>把URL放进HashMap里，<code>put</code> 方法之后又是调用了 <code>hash</code> 方法</p>
 <figure class="fig"><img src="img/java-1.webp" alt="76b24100-beff-4de3-afae-8673dbc90e1d" loading="lazy" decoding="async"></figure>
 <p><code>hash</code> 方法则是调用了 <code>hashcode</code> 这一函数</p>
@@ -224,7 +224,7 @@
 <p>找到了——getHostAddress（获取这个域名对应的 IP 地址），跟进<code>getHostAddress</code></p>
 <figure class="fig"><img src="img/java-6.webp" alt="2eec24a8-b92b-40e6-a1b1-03918a702743" loading="lazy" decoding="async"></figure>
 <p>这⾥ <code>InetAddress.getByName(host)</code> 的作⽤是根据主机名，获取其 IP 地址，在⽹络上其实就是⼀次 DNS 查询。</p>
-<h4 id="s8">URLDNS 反序列化利用链的 POC<a class="h-link" href="#s8" aria-hidden="true">§</a></h4>
+<h5 id="s8">URLDNS 反序列化利用链的 POC<a class="h-link" href="#s8" aria-hidden="true">§</a></h5>
 <ol><li><p>去DNSLog上生成一条测试域名</p></li><li><p>修改SerializationTest.java</p>
 <div class="code" data-lang="java"><div class="code-head"><span class="code-lang">java</span><button class="code-copy" type="button" aria-label="复制代码">COPY</button></div><pre><code class="hljs"><span class="hljs-keyword">package</span> com.study.serialize;
 
@@ -310,6 +310,6 @@ hashmap.<span class="hljs-title">put</span>(<span class="hljs-keyword">new</span
   </div>
 </footer>
 
-<script src="app.js?v=v17"></script>
+<script src="app.js?v=v18"></script>
 </body>
 </html>

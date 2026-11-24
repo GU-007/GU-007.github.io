@@ -9,7 +9,7 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Space+Grotesk:wght@400;500;700&family=JetBrains+Mono:wght@400;500&family=Noto+Serif+SC:wght@400;600;900&family=Noto+Sans+SC:wght@300;400;500&display=swap" rel="stylesheet">
-<link rel="stylesheet" href="style.css?v=v17">
+<link rel="stylesheet" href="style.css?v=v18">
 </head>
 <body class="page-notes">
 
@@ -49,32 +49,30 @@
     <div class="filter">
       <button class="is-on" data-cat="*">文章 04</button>
       <button data-cat="WP">WP 02</button>
-      <button data-cat="Java安全">Java安全 01</button>
-      <button data-cat="漏洞研究">漏洞研究 01</button>
-      <button data-cat="学习日志">学习日志 02</button>
+      <button data-cat="Java">Java 01</button>
+      <button data-cat="Web安全基础">Web安全基础 03</button>
     </div>
 
     <div id="entries">
 
-      <article class="entry rise" data-cat="Java安全" style="--entry-img:url('img/entry-java.webp');--entry-pos:50% 32%">
+      <article class="entry rise" data-cat="Java" style="--entry-img:url('img/entry-java.webp');--entry-pos:50% 32%">
         <p class="entry-no">01</p>
         <div>
           <h2 class="entry-title"><a href="post-java-deserialize.html" data-hover>Java反序列化-基本概念与利用</a></h2>
           <p class="entry-excerpt">从序列化 / 反序列化讲起，写一遍 Java 的代码实现，落到 readObject 的漏洞成因，最后用 URLDNS 这条最简链走完整条复现流程。</p>
           <div class="entry-meta">
             <span>2026.11.23</span>
-            <em>Java安全</em>
+            <em>Java</em>
             <span>1,974 字</span>
           </div>
         </div>
-        <div class="entry-side"><b>Java安全</b>3 节 · 3 小节</div>
+        <div class="entry-side"><b>Java</b>3 节 · 3 小节</div>
       </article>
 
       <article class="entry entry--wp rise" data-cat="WP">
         <p class="entry-no">01</p>
         <div>
           <h2 class="entry-title"><a href="post-include-0.html" data-hover>[NewStarCTF 2023 公开赛道]include 0。0</a></h2>
-          <p class="entry-excerpt">NewStarCTF 2023。黑名单把 base64 和 rot13 都关了，换用 php://filter 的 convert.iconv 链，把 flag.php 的源码直接读出来。</p>
           <div class="entry-meta">
             <span>2026.11.11</span>
             <em>WP</em>
@@ -88,7 +86,6 @@
         <p class="entry-no">02</p>
         <div>
           <h2 class="entry-title"><a href="post-include-pear.html" data-hover>[NewStarCTF 2023 公开赛道]Include 🍐</a></h2>
-          <p class="entry-excerpt">NewStarCTF 2023。include 带后缀拼接、黑名单更严，先从 phpinfo 拿到 register_argc_argv，再用 pearcmd.php 让靶机自己去 VPS 下载木马。</p>
           <div class="entry-meta">
             <span>2026.11.11</span>
             <em>WP</em>
@@ -98,46 +95,46 @@
         <div class="entry-side"><b>WP</b></div>
       </article>
 
-      <article class="entry rise" data-cat="漏洞研究" style="--entry-img:url('img/w-horse.webp');--entry-pos:44% 10%">
+      <article class="entry rise" data-cat="Web安全基础" style="--entry-img:url('img/w-horse.webp');--entry-pos:44% 10%">
         <p class="entry-no">02</p>
         <div>
           <h2 class="entry-title"><a href="post.html" data-hover>SSRF 从 0 到 1</a></h2>
           <p class="entry-excerpt">从 URL 结构讲起，串起 Gopher 打 Redis / MySQL / PHP-FPM 的完整链路，再谈 IP 与解析差异绕过、DNS 重绑定、NAT 环回，以及防御该怎么做。</p>
           <div class="entry-meta">
             <span>2026.11.03</span>
-            <em>漏洞研究</em>
+            <em>Web安全基础</em>
             <span>7,345 字</span>
           </div>
         </div>
-        <div class="entry-side"><b>漏洞研究</b>5 节 · 7 小节</div>
+        <div class="entry-side"><b>Web安全基础</b>5 节 · 7 小节</div>
       </article>
 
-      <article class="entry rise" data-cat="学习日志" style="--entry-img:url('img/w-snow.webp');--entry-pos:50% 14%">
+      <article class="entry rise" data-cat="Web安全基础" style="--entry-img:url('img/w-snow.webp');--entry-pos:50% 14%">
         <p class="entry-no">03</p>
         <div>
           <h2 class="entry-title"><a href="post-http.html" data-hover>HTTP 基础</a></h2>
           <p class="entry-excerpt">请求与响应报文、状态码、方法与 Content-Type、multipart、MIME、Cookie 与 Session、HTTPS，最后落到 URL 结构与编码。</p>
           <div class="entry-meta">
             <span>2026.09.26</span>
-            <em>学习日志</em>
+            <em>Web安全基础</em>
             <span>6,773 字</span>
           </div>
         </div>
-        <div class="entry-side"><b>学习日志</b>4 节</div>
+        <div class="entry-side"><b>Web安全基础</b>4 节</div>
       </article>
 
-      <article class="entry rise" data-cat="学习日志" style="--entry-img:url('img/w-sunset.webp');--entry-pos:50% 16%">
+      <article class="entry rise" data-cat="Web安全基础" style="--entry-img:url('img/w-sunset.webp');--entry-pos:50% 16%">
         <p class="entry-no">04</p>
         <div>
           <h2 class="entry-title"><a href="post-php.html" data-hover>PHP 语言基础</a></h2>
           <p class="entry-excerpt">弱类型比较、超全局变量、常用函数与陷阱、正则与过滤、编码与哈希、数据库相关，以及过滤绕过的通用原理。</p>
           <div class="entry-meta">
             <span>2026.09.26</span>
-            <em>学习日志</em>
+            <em>Web安全基础</em>
             <span>4,483 字</span>
           </div>
         </div>
-        <div class="entry-side"><b>学习日志</b>3 节</div>
+        <div class="entry-side"><b>Web安全基础</b>3 节</div>
       </article>
 
     </div>
@@ -156,6 +153,6 @@
   </div>
 </footer>
 
-<script src="app.js?v=v17"></script>
+<script src="app.js?v=v18"></script>
 </body>
 </html>

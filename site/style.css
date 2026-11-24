@@ -790,10 +790,11 @@ ul,ol{ margin: 0; padding: 0; list-style: none; }
 
 /* ---------- WP 条目：紧凑排版 ---------- */
 .entry--wp{
-  padding-top: 16px;
-  padding-bottom: 16px;
+  padding-top: 9px;
+  padding-bottom: 9px;
   align-items: center;
 }
+.entry--wp .entry-excerpt{ display: none; }
 .entry--wp .entry-no{ padding-top: 0; }
 .entry--wp .entry-title{
   font-size: clamp(15px, 1.25vw, 19px);
@@ -1736,8 +1737,12 @@ body.page-projects .topbar{
   transition: color .25s, transform .3s var(--ease);
 }
 .toc-no{ font-family: var(--f-mono); font-size: 8.5px; color: var(--ink-4); letter-spacing: .04em; }
-.toc-l3 a{ padding-left: 18px; font-size: 11.5px; color: var(--ink-4); }
+.toc-l3 a{ padding-left: 16px; font-size: 11.5px; color: var(--ink-4); }
 .toc-l3 .toc-no{ display: none; }
+.toc-l4 a{ padding-left: 26px; font-size: 11px; color: var(--ink-4); }
+.toc-l4 .toc-no{ display: none; }
+.toc-l5 a{ padding-left: 36px; font-size: 10.5px; color: var(--ink-4); }
+.toc-l5 .toc-no{ display: none; }
 .toc-item a:hover{ color: var(--cinnabar); transform: translateX(3px); }
 .toc-item.is-active > a{ color: var(--ink); }
 .toc-item.is-active .toc-no{ color: var(--cinnabar); }
@@ -1801,14 +1806,20 @@ body.page-projects .topbar{
   width: 6px; height: 6px; background: var(--cinnabar); transform: rotate(45deg);
 }
 .prose h4{
-  display: inline-block; margin: 1.9em 0 .7em;
-  font-family: var(--f-sans); font-size: 12.5px; font-weight: 500;
-  letter-spacing: .16em; color: var(--azurite);
-  border-bottom: 2px solid rgba(36,71,124,.2); padding-bottom: 3px;
+  display: block; margin: 2.1em 0 .8em;
+  padding-left: 12px; border-left: 3px solid var(--rule-d);
+  font-family: var(--f-title); font-size: 17px; font-weight: 900;
+  letter-spacing: .01em; color: var(--ink);
+}
+.prose h5{
+  display: block; margin: 1.8em 0 .7em;
+  padding-left: 12px; border-left: 3px solid rgba(174,58,43,.5);
+  font-family: var(--f-title); font-size: 16px; font-weight: 700;
+  letter-spacing: .01em; color: var(--ink);
 }
 .h-link{ margin-left: .35em; font-size: .5em; color: var(--rule-d); opacity: 0; transition: opacity .25s; }
-.prose h2:hover .h-link, .prose h3:hover .h-link{ opacity: 1; }
-.prose h2, .prose h3, .prose h4{ scroll-margin-top: 88px; }
+.prose h2:hover .h-link, .prose h3:hover .h-link, .prose h4:hover .h-link, .prose h5:hover .h-link{ opacity: 1; }
+.prose h2, .prose h3, .prose h4, .prose h5{ scroll-margin-top: 88px; }
 
 .prose code{
   font-family: var(--f-mono); font-size: .86em;
@@ -1889,14 +1900,8 @@ body.page-projects .topbar{
 .prose li > ul, .prose li > ol{ margin: .3em 0 .5em; }
 
 .prose hr{
-  border: 0; height: 1px; width: 130px; margin: 2.4em auto;
-  background: linear-gradient(90deg, transparent, var(--rule-d), transparent);
-  position: relative; overflow: visible;
-}
-.prose hr::after{
-  content: "※"; position: absolute; left: 50%; top: -12px;
-  transform: translateX(-50%); padding: 0 12px;
-  background: var(--paper); color: var(--cinnabar); font-size: 11px;
+  border: 0; height: 1px; width: 100%; margin: 2.2em 0;
+  background: var(--rule);
 }
 .prose hr + h2{ margin-top: 2em; }
 
