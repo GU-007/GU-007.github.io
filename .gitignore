@@ -3,18 +3,18 @@ Thumbs.db
 *.log
 db.json
 
-# 本地工作目录与原始素材，不发布
+# 本地工作目录与原始素材，只留在本机，不进仓库
 _design/
+_build/
 _oldsite/
 .claude/
+__pycache__/
 设计素材（给dsh看的）/
+上传指令.md
+_source/
 
 # 旧 Hexo 产物
 node_modules/
 public/
 .deploy*/
 _multiconfig.yml
-
-# �����ű�
-_build/
-__pycache__/

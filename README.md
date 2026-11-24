@@ -7,31 +7,22 @@
 ```
 site/                 发布目录（整个网站）
   index.html          首页
-  notes.html          文章列表（带搜索/筛选）
-  post.html           文章：SSRF 从 0 到 1
-  post-http.html      文章：HTTP 基础
-  post-php.html       文章：PHP 语言基础
-  projects.html       项目（贴墙板）
-  links.html          友链（邮票墙）
+  notes.html          文章列表（带搜索 / 分类筛选）
+  post.html           SSRF 从 0 到 1
+  post-http.html      HTTP 基础
+  post-php.html       PHP 语言基础
+  post-java-deserialize.html   Java 反序列化
+  post-include-0.html          赛事 WP：include 0。0
+  post-include-pear.html       赛事 WP：Include 🍐
+  projects.html       项目
+  links.html          友链
   about.html          关于
   style.css           全部样式
-  app.js              全部脚本（时钟/日历/签/终端/搜索/目录）
+  app.js              全部脚本（时钟 / 日历 / 今日签 / 终端 / 搜索 / 目录）
   img/                图片
 
-_source/posts/        三篇文章的 markdown 原文（不发布，留着改稿用）
-.github/workflows/    部署流程
+.github/workflows/deploy.yml   部署流程
 ```
-
-## 改内容
-
-大部分文字直接改 `site/*.html` 里对应的部分即可。几处不在 HTML 里的：
-
-| 内容 | 在哪 |
-|---|---|
-| 首页"今日签"的十条宜忌 | `site/app.js` 里 `FORTUNE` |
-| 首页终端能执行的命令 | `site/app.js` 里 `CMDS` 和 `FILES` |
-| 友链列表 | `site/links.html` 里每个 `.stamp` |
-| 每篇文章的正文 | `site/post*.html` 里 `<div class="prose">` 内部 |
 
 ## 缓存
 
