@@ -619,6 +619,21 @@ ul,ol{ margin: 0; padding: 0; list-style: none; }
   color: var(--ink-4); border: 1px solid var(--rule); padding: 2px 7px;
 }
 
+
+/* ---------- 访客计数（小眼睛） ---------- */
+.visitors{
+  display: flex; align-items: center; justify-content: flex-end; gap: 7px;
+  margin: 14px 0 0;
+  font-family: var(--f-mono); font-size: 8.5px; letter-spacing: .18em;
+  color: var(--ink-4); opacity: .72;
+  transition: opacity .3s ease;
+}
+.visitors[hidden]{ display: none; }
+.visitors:hover{ opacity: 1; }
+.visitors .eye{ width: 13px; height: 13px; fill: currentColor; flex: none; }
+.visitors b{ font-weight: 500; color: var(--ink-3); letter-spacing: .06em; }
+.visitors em{ font-style: normal; }
+
 /* 底部字条 */
 .ticker{
   overflow: hidden; border-top: 1px solid var(--rule);
@@ -1639,8 +1654,8 @@ body.page-projects .topbar{
 
 .post-title{
   font-family: var(--f-title); font-weight: 900;
-  font-size: clamp(40px, 7.2vw, 104px);
-  line-height: 1.02; letter-spacing: -.02em;
+  font-size: clamp(32px, 5.2vw, 76px);
+  line-height: 1.12; letter-spacing: -.015em;
   color: var(--ink); max-width: 14em;
   text-wrap: balance;
   text-shadow: 0 1px 0 rgba(242,235,219,.6);
@@ -1908,8 +1923,8 @@ body.page-projects .topbar{
 .cover--plain::after{ display: none; }
 
 .post-title--long{
-  font-size: clamp(26px, 3.6vw, 52px);
-  line-height: 1.24;
+  font-size: clamp(23px, 2.9vw, 42px);
+  line-height: 1.3;
   letter-spacing: -0.005em;
   max-width: 20em;
 }
