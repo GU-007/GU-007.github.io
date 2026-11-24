@@ -19,7 +19,7 @@
   --gold:      #A8873F;
 
   --gutter: clamp(20px, 4.4vw, 76px);
-  --max:    1240px;
+  --max:    1560px;
   --ease:   cubic-bezier(.22,.61,.36,1);
 
   --f-poster: "Bebas Neue", "Space Grotesk", sans-serif;
@@ -33,7 +33,7 @@
 
 /* ---------- base ---------- */
 *,*::before,*::after{ box-sizing: border-box; }
-html{ background: var(--paper); overflow-x: auto; }
+html{ background: var(--paper); overflow-x: clip; }
 
 body{
   margin: 0;
@@ -44,7 +44,7 @@ body{
   line-height: 1.75;
   -webkit-font-smoothing: antialiased;
   text-rendering: optimizeLegibility;
-  overflow-x: auto;
+  overflow-x: clip;
 }
 
 img{ display: block; max-width: 100%; }
@@ -1635,7 +1635,7 @@ body.page-projects .topbar{
 .cover-ticks i:nth-child(2){ top: 84px; right: var(--gutter); border-left: 0; border-bottom: 0; }
 .cover-ticks i:nth-child(3){ bottom: 26px; left: var(--gutter); border-right: 0; border-top: 0; }
 .cover-ticks i:nth-child(4){ bottom: 26px; right: var(--gutter); border-left: 0; border-top: 0; }
-.cover-inner{ position: relative; width: 100%; max-width: 1180px; margin: 0 auto; }
+.cover-inner{ position: relative; width: 100%; max-width: var(--max); margin: 0 auto; }
 
 .post-title{
   font-family: var(--f-title); font-weight: 900;
@@ -1698,7 +1698,7 @@ body.page-projects .topbar{
 
 /* 正文上方的导航条 */
 .post-bar{
-  max-width: 1180px; margin: 0 auto;
+  max-width: var(--max); margin: 0 auto;
   padding: 14px var(--gutter);
   display: flex; align-items: baseline; gap: 18px;
   border-top: 1px solid var(--rule);
@@ -1717,9 +1717,9 @@ body.page-projects .topbar{
 
 .layout{
   display: grid;
-  grid-template-columns: 184px minmax(0, 1fr) 132px;
-  gap: clamp(22px, 4vw, 56px);
-  max-width: 1180px; margin: 0 auto;
+  grid-template-columns: clamp(140px, 11vw, 192px) minmax(0, 1fr) clamp(104px, 8vw, 136px);
+  gap: clamp(22px, 3vw, 48px);
+  max-width: var(--max); margin: 0 auto;
   padding: clamp(36px, 6vh, 72px) var(--gutter) clamp(60px, 10vh, 120px);
 }
 .rail-h{
@@ -1727,7 +1727,7 @@ body.page-projects .topbar{
   font-family: var(--f-mono); font-size: 8.5px; letter-spacing: .3em; color: var(--ink-4);
   border-bottom: 1px solid var(--rule);
 }
-.toc-sticky{ position: sticky; top: 92px; max-height: calc(100vh - 140px); overflow-y: auto; padding-right: 6px; }
+.toc-sticky{ position: sticky; top: 84px; max-height: calc(100vh - 116px); overflow-y: auto; padding-right: 6px; }
 .toc-sticky::-webkit-scrollbar{ width: 2px; }
 .toc-sticky::-webkit-scrollbar-thumb{ background: var(--rule-d); }
 .toc-list{ margin: 0; padding: 0; }
@@ -1938,7 +1938,7 @@ body.page-projects .topbar{
    ========================================================= */
 .foot{ border-top: 1px solid var(--rule); background: rgba(233,224,205,.4); }
 .foot-inner{
-  max-width: 1240px; margin: 0 auto;
+  max-width: var(--max); margin: 0 auto;
   padding: clamp(26px, 4.4vh, 48px) var(--gutter) clamp(30px, 5vh, 56px);
 }
 .foot-nav{
