@@ -27,10 +27,23 @@ jobs:
         uses: actions/checkout@v4
 
       - name: Upload static site
-        uses: actions/upload-pages-artifact@v3
+        id: upload
+        uses: actions/upload-pages-artifact@v5
         with:
           path: ./site
 
+      # deploy-pages 有时会赶在 artifact 元数据就绪之前去查，导致
+      # "No artifacts named github-pages were found"，失败一次就重试一次
       - name: Deploy to GitHub Pages
         id: deployment
-        uses: actions/deploy-pages@v4
+        uses: actions/deploy-pages@v5
+        continue-on-error: true
+
+      - name: Wait and retry once
+        if: steps.deployment.outcome == 'failure'
+        run: sleep 20
+
+      - name: Deploy to GitHub Pages (retry)
+        if: steps.deployment.outcome == 'failure'
+        id: deployment2
+        uses: actions/deploy-pages@v5
