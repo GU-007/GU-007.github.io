@@ -9,7 +9,7 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Space+Grotesk:wght@400;500;700&family=JetBrains+Mono:wght@400;500&family=Noto+Serif+SC:wght@400;600;900&family=Noto+Sans+SC:wght@300;400;500&display=swap" rel="stylesheet">
-<link rel="stylesheet" href="style.css?v=v21">
+<link rel="stylesheet" href="style.css?v=v22">
 </head>
 <body class="page-notes">
 
@@ -31,7 +31,7 @@
 
 <main>
   <div class="page-head">
-    <p class="kicker"><span class="k-no">01</span>ARTICLES <em>·</em> 共 06 篇 <em>·</em> 21,127 字</p>
+    <p class="kicker"><span class="k-no">01</span>ARTICLES <em>·</em> 共 07 篇 <em>·</em> 25,788 字</p>
     <h1 class="page-title">文章</h1>
     <p class="page-desc">Web 安全的学习路径、漏洞分析与事后复盘。按时间倒序，读到哪算哪。</p>
   </div>
@@ -43,20 +43,34 @@
       <span class="search-label mono">SEARCH</span>
       <input id="q" type="search" placeholder="标题、摘要、标签…" autocomplete="off" spellcheck="false">
       <kbd class="search-key mono">/</kbd>
-      <span class="search-count mono" id="qCount"><b>4</b> / 6</span>
+      <span class="search-count mono" id="qCount"><b>5</b> / 7</span>
     </div>
 
     <div class="filter">
-      <button class="is-on" data-cat="*">文章 04</button>
+      <button class="is-on" data-cat="*">文章 05</button>
       <button data-cat="WP">WP 02</button>
       <button data-cat="Java">Java 01</button>
-      <button data-cat="Web安全基础">Web安全基础 03</button>
+      <button data-cat="Web安全基础">Web安全基础 04</button>
     </div>
 
     <div id="entries">
 
-      <article class="entry rise" data-cat="Java" style="--entry-img:url('img/entry-java.webp');--entry-pos:50% 32%">
+      <article class="entry rise" data-cat="Web安全基础" style="--entry-img:url('img/entry-rce.webp');--entry-pos:50% 32%">
         <p class="entry-no">01</p>
+        <div>
+          <h2 class="entry-title"><a href="post-rce.html" data-hover>命令执行漏洞(RCE)</a></h2>
+          <p class="entry-excerpt">RCE 不是一种漏洞类别，而是攻击结果。从命令拼接与转义讲起，走过 PHP 的各个执行函数、测试流程、十来种绕过手法，再到无回显、无参数、无字母数字。</p>
+          <div class="entry-meta">
+            <span>2026.11.26</span>
+            <em>Web安全基础</em>
+            <span>4,661 字</span>
+          </div>
+        </div>
+        <div class="entry-side"><b>Web安全基础</b>7 节 · 20 小节</div>
+      </article>
+
+      <article class="entry rise" data-cat="Java" style="--entry-img:url('img/entry-java.webp');--entry-pos:50% 32%">
+        <p class="entry-no">02</p>
         <div>
           <h2 class="entry-title"><a href="post-java-deserialize.html" data-hover>Java反序列化-基本概念与利用</a></h2>
           <p class="entry-excerpt">从序列化 / 反序列化讲起，写一遍 Java 的代码实现，落到 readObject 的漏洞成因，最后用 URLDNS 这条最简链走完整条复现流程。</p>
@@ -96,7 +110,7 @@
       </article>
 
       <article class="entry rise" data-cat="Web安全基础" style="--entry-img:url('img/w-horse.webp');--entry-pos:44% 10%">
-        <p class="entry-no">02</p>
+        <p class="entry-no">03</p>
         <div>
           <h2 class="entry-title"><a href="post.html" data-hover>SSRF 从 0 到 1</a></h2>
           <p class="entry-excerpt">从 URL 结构讲起，串起 Gopher 打 Redis / MySQL / PHP-FPM 的完整链路，再谈 IP 与解析差异绕过、DNS 重绑定、NAT 环回，以及防御该怎么做。</p>
@@ -110,7 +124,7 @@
       </article>
 
       <article class="entry rise" data-cat="Web安全基础" style="--entry-img:url('img/w-snow.webp');--entry-pos:50% 14%">
-        <p class="entry-no">03</p>
+        <p class="entry-no">04</p>
         <div>
           <h2 class="entry-title"><a href="post-http.html" data-hover>HTTP 基础</a></h2>
           <p class="entry-excerpt">请求与响应报文、状态码、方法与 Content-Type、multipart、MIME、Cookie 与 Session、HTTPS，最后落到 URL 结构与编码。</p>
@@ -124,7 +138,7 @@
       </article>
 
       <article class="entry rise" data-cat="Web安全基础" style="--entry-img:url('img/w-sunset.webp');--entry-pos:50% 16%">
-        <p class="entry-no">04</p>
+        <p class="entry-no">05</p>
         <div>
           <h2 class="entry-title"><a href="post-php.html" data-hover>PHP 语言基础</a></h2>
           <p class="entry-excerpt">弱类型比较、超全局变量、常用函数与陷阱、正则与过滤、编码与哈希、数据库相关，以及过滤绕过的通用原理。</p>
@@ -153,6 +167,6 @@
   </div>
 </footer>
 
-<script src="app.js?v=v21"></script>
+<script src="app.js?v=v22"></script>
 </body>
 </html>

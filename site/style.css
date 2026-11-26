@@ -1752,6 +1752,7 @@ body.page-projects .topbar{
   transition: color .25s, transform .3s var(--ease);
 }
 .toc-no{ font-family: var(--f-mono); font-size: 8.5px; color: var(--ink-4); letter-spacing: .04em; }
+.toc-l1 a{ font-size: 13px; color: var(--ink-2); }
 .toc-l3 a{ padding-left: 16px; font-size: 11.5px; color: var(--ink-4); }
 .toc-l3 .toc-no{ display: none; }
 .toc-l4 a{ padding-left: 26px; font-size: 11px; color: var(--ink-4); }
@@ -1788,6 +1789,11 @@ body.page-projects .topbar{
 }
 .prose a:hover{ color: var(--cinnabar); border-color: var(--cinnabar); }
 
+.prose h1{
+  margin: 3em 0 1em;
+  font-family: var(--f-title); font-weight: 900;
+  font-size: clamp(25px, 2.4vw, 30px); line-height: 1.42; color: var(--ink);
+}
 .prose h2{
   margin: 2.6em 0 .9em;
   font-family: var(--f-title); font-weight: 900;
@@ -1810,8 +1816,8 @@ body.page-projects .topbar{
   font-size: 17.5px; line-height: 1.6; color: var(--ink);
 }
 .h-link{ margin-left: .35em; font-size: .5em; color: var(--rule-d); opacity: 0; transition: opacity .25s; }
-.prose h2:hover .h-link, .prose h3:hover .h-link, .prose h4:hover .h-link, .prose h5:hover .h-link{ opacity: 1; }
-.prose h2, .prose h3, .prose h4, .prose h5{ scroll-margin-top: 88px; }
+.prose h1:hover .h-link, .prose h2:hover .h-link, .prose h3:hover .h-link, .prose h4:hover .h-link, .prose h5:hover .h-link{ opacity: 1; }
+.prose h1, .prose h2, .prose h3, .prose h4, .prose h5{ scroll-margin-top: 88px; }
 
 .prose code{
   font-family: var(--f-mono); font-size: .86em;
